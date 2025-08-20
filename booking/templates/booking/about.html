@@ -1,0 +1,188 @@
+{% load static %}
+
+{% block content %}
+<style>
+    body {
+        background: linear-gradient(to right, #eef2f3, #ffffff);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .about-section {
+        max-width: 960px;
+        margin: 3rem auto;
+        padding: 4rem 2rem;
+        background-color: #ffffff;
+        border-radius: 1.5rem;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+        animation: fadeSlideUp 0.8s ease forwards;
+    }
+
+    .about-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #333;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .about-subtitle {
+        font-size: 1.2rem;
+        color: #777;
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .section-divider {
+        width: 60px;
+        height: 4px;
+        background: #5c6ac4;
+        margin: 0 auto 2rem auto;
+        border-radius: 2px;
+    }
+
+    .about-content {
+        font-size: 1rem;
+        color: #555;
+        line-height: 1.9;
+        padding: 0 1rem;
+    }
+
+    body::-webkit-scrollbar {
+        display: none;
+        /* Chrome, Safari, Opera */
+    }
+
+
+    .highlight {
+        color: #5c6ac4;
+        font-weight: 600;
+    }
+
+    .about-features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+        padding: 0 1rem;
+    }
+
+    .feature-card {
+        background: #f5f7ff;
+        padding: 2rem 1.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 5px 18px rgba(92, 106, 196, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(92, 106, 196, 0.2);
+    }
+
+    .feature-card img {
+        width: 48px;
+        margin-bottom: 1rem;
+    }
+
+    .feature-card h5 {
+        font-size: 1.1rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+        font-size: 0.95rem;
+        color: #555;
+    }
+
+    .cta-button {
+        display: inline-block;
+        margin-top: 3rem;
+        background: linear-gradient(135deg, #5c6ac4, #857ff3);
+        color: white;
+        padding: 0.8rem 2rem;
+        border-radius: 2rem;
+        text-decoration: none;
+        font-weight: 500;
+        box-shadow: 0 6px 20px rgba(92, 106, 196, 0.3);
+        transition: transform 0.3s ease;
+    }
+
+    .cta-button:hover {
+        transform: translateY(-3px);
+    }
+
+    @keyframes fadeSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% if messages %}
+<div class="message-container">
+  {% for message in messages %}
+  <div class="alert alert-success {{ message.tags }}" role="alert">
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}     
+<div class="about-section animate__animated animate__fadeIn">
+    <div>
+        <a href="{% url 'home' %}">
+          <img src="{% static 'img/ngarage_logo.png' %}" alt="NGarage Logo" style="height: 50px; width: auto;">
+        </a>
+      </div>
+    <h1 class="about-title">About NGarage</h1>
+    <p class="about-subtitle">Smart, seamless, and stress-free bus travel</p>
+    <div class="section-divider"></div>
+
+    <div class="about-content">
+        <p><span class="highlight">NGarage</span> is your ultimate companion for modern bus travel. Our platform allows
+            you to search, book, and manage tickets with ease, blending functionality and design for a smooth
+            experience.</p>
+        <p>We focus on <span class="highlight">reliability</span>, <span class="highlight">security</span>, and <span
+                class="highlight">convenience</span>, giving users access to real-time seat layouts, flexible payments,
+            and instant confirmations via email and SMS.</p>
+        <p>Whether you're commuting, exploring, or planning a getaway—NGarage ensures your journey begins with ease and
+            ends with satisfaction.</p>
+    </div>
+
+    <div class="about-features">
+        <div class="feature-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/3659/3659893.png" alt="Seats Icon">
+            <h5>Dynamic Seat Booking</h5>
+            <p>Select your favorite seats visually in our real bus layout view.</p>
+        </div>
+        <div class="feature-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/727/727399.png" alt="Email Icon">
+            <h5>Email & SMS Alerts</h5>
+            <p>Receive booking confirmations with a downloadable PDF ticket instantly.</p>
+        </div>
+        <div class="feature-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135706.png" alt="Payment Icon">
+            <h5>Secure Payments</h5>
+            <p>Pay online via Stripe or choose Cash at Entry—your convenience matters.</p>
+        </div>
+        <div class="feature-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/456/456212.png" alt="Dashboard Icon">
+            <h5>User Dashboard</h5>
+            <p>Track trips, manage cancellations, and update your profile easily.</p>
+        </div>
+    </div>
+
+    <div style="text-align: center;">
+        <a href="{% url 'home' %}" class="cta-button">Back to Home</a>
+    </div>
+</div>
+
+<!-- Animate.css for fade-in effect -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+{% endblock %}

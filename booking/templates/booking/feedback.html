@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Feedback Form</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .feedback-container {
+      background: #fff;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      font-weight: 800;
+      color: #7e57c2;
+    }
+    .emoji-options {
+      display: flex;
+      justify-content: space-around;
+      margin: 1.5rem 0;
+    }
+    .emoji-btn {
+      font-size: 2rem;
+      background: #f3f3f3;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .emoji-btn:hover {
+      background-color: #ffe0ec;
+      box-shadow: 0 4px 10px rgba(126, 87, 194, 0.2);
+      transform: scale(1.15);
+    }
+    .emoji-btn.selected {
+      background-color: #e1bee7;
+      border-color: #7e57c2;
+      box-shadow: 0 0 8px rgba(126, 87, 194, 0.4);
+    }
+    textarea {
+      width: 100%;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 0.75rem;
+      resize: none;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+    .submit-btn {
+      background: linear-gradient(45deg, #7e57c2, #ab47bc);
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .submit-btn:hover {
+      background: linear-gradient(45deg, #ab47bc, #7e57c2);
+      box-shadow: 0 5px 20px rgba(171, 71, 188, 0.4);
+      transform: translateY(-2px);
+    }
+    .form-label {
+      display: block;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      border: 1px solid #ddd;
+    }
+    .back-link {
+      text-decoration: none;
+      color: #555;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: 0.3s;
+      float: right;
+    }
+
+    .back-link:hover {
+      background-color: #eee;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="feedback-container">
+    <div>
+        <a href="{% url 'home' %}">
+          <img src="{% static 'img/ngarage_logo.png' %}" alt="NGarage Logo" style="height: 50px; width: auto;">
+        </a>
+      </div>
+    <h1>Your Feedback</h1>
+    <p>How was your experience?</p>
+    <form method="POST" action="{% url 'feedback' %}">
+      {% csrf_token %}
+      <div class="emoji-options">
+        <button class="emoji-btn" type="button" data-value="1" title="Sad">😞</button>
+        <button class="emoji-btn" type="button" data-value="2" title="Neutral">😐</button>
+        <button class="emoji-btn" type="button" data-value="3" title="Happy">😊</button>
+      </div>
+      <input type="hidden" name="rating" id="ratingInput">
+      
+      <label for="email" class="form-label">Email (Optional)</label>
+      <input type="email" id="email" name="email" class="form-control">
+      
+      <textarea placeholder="Write your comments..." name="comment"></textarea>
+      
+      <button type="submit" class="submit-btn">Submit</button>
+    </form>
+    <a href="javascript:history.back()" class="back-link">&larr; Back</a>
+  </div>
+
+  
+  <script>
+    const emojiButtons = document.querySelectorAll('.emoji-btn');
+    const ratingInput = document.getElementById('ratingInput');
+    const form = document.querySelector('form');
+    const comment = document.querySelector('textarea');
+  
+    emojiButtons.forEach(btn => {
+      btn.onclick = () => {
+        emojiButtons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        ratingInput.value = btn.dataset.value;
+      };
+    });
+  
+    form.onsubmit = e => {
+      if (!ratingInput.value || !comment.value.trim()) {
+        alert("Please select a rating and write a comment.");
+        e.preventDefault();
+      }
+    };
+  </script>
+  
+</body>
+</html>

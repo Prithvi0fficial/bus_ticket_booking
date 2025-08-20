@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Seat Booking</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+        }
+
+        .seat {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.2s ease-in-out;
+            border: 2px solid #ddd;
+            position: relative;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .seat.booked {
+            background-color: #F44336 !important;
+            cursor: not-allowed;
+        }
+
+        .seat:hover {
+            transform: scale(1.1);
+        }
+
+        .aisle {
+            width: 60px;
+            height: 60px;
+            visibility: hidden;
+        }
+
+        .window-seat {
+            border: 2px solid gold;
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white">
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="#">About</a>
+            <a href="{% url 'seat_selection' bus.id %}">Booking</a>
+            <a href="#">Courier</a>
+        </div>
+        <div class="footer">
+            <a href="#">Help</a>
+            <a href="#">Customer Care</a>
+        </div>
+    </nav>
+
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-lg">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">
+                {{ bus.name }} ({{ bus.number }}) - Seat Selection
+            </h2>
+
+            <div class="flex justify-center mb-4">
+                <div class="bg-gray-700 text-white text-center font-bold p-3 w-24 rounded-lg">Driver</div>
+            </div>
+
+
+            <div id="seat-container" class="grid grid-cols-5 gap-3 justify-center">
+                <!-- Seats will be dynamically added here -->
+            </div>
+            <div class="mt-4 text-center">
+                <p class="text-lg text-gray-800">Total Seats Selected: <span id="total-seats">0</span></p>
+                <p class="text-lg text-gray-800">Total Price: ₹<span id="total-price">0</span></p>
+            </div>
+
+            <div class="mt-4 text-center">
+                <button id="book-button"
+                    class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-700">
+                    Book Selected Seats
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        let selectedSeats = [];
+        let bookedSeats = {{ booked_seats|safe }}; // Fetch booked seats from Django
+        let seatPrice = {{ seat_price }}; // Fetch seat price from Django
+    
+        function renderSeats() {
+            let seatLayout = {{ seat_layout|safe }}; // Fetch seat layout dynamically
+            let container = $('#seat-container');
+            container.empty();
+    
+            seatLayout.forEach(row => {
+                row.forEach(seat => {
+                    if (seat === 'aisle') {
+                        container.append(`<div class='aisle'></div>`);
+                    } else if (seat !== '') {
+                        let isBooked = bookedSeats.includes(parseInt(seat));
+                        let seatClass = isBooked ? 'seat booked' : 'seat';
+                        let windowClass = (seat % 5 === 1 || seat % 5 === 4) ? 'window-seat' : '';
+                        container.append(`<div class='${seatClass} ${windowClass}' data-seat='${seat}'>${seat}</div>`);
+                    }
+                });
+            });
+        }
+    
+        renderSeats();
+    
+        function updateTotal() {
+            let totalSeats = selectedSeats.length;
+            let totalPrice = totalSeats * seatPrice;
+    
+            $("#total-seats").text(totalSeats);
+            $("#total-price").text(totalPrice);
+        }
+    
+        $(document).on("click", ".seat", function() {
+            let seatNumber = $(this).data("seat");
+    
+            if (!$(this).hasClass("booked")) {
+                if ($(this).hasClass("bg-green-500")) {
+                    $(this).removeClass("bg-green-500").addClass("bg-yellow-500");
+                    selectedSeats.push(seatNumber);
+                } else {
+                    $(this).removeClass("bg-yellow-500").addClass("bg-green-500");
+                    selectedSeats = selectedSeats.filter(s => s !== seatNumber);
+                }
+    
+                updateTotal(); // Update total seats and price
+            }
+        });
+    
+        $("#book-button").click(function() {
+            if (selectedSeats.length === 0) {
+                alert("Please select at least one seat.");
+                return;
+            }
+    
+            $.ajax({
+                url: "{% url 'book_ticket' bus.id %}",
+                method: "POST",
+                data: {
+                    "selected_seats": selectedSeats,
+                    "csrfmiddlewaretoken": "{{ csrf_token }}"
+                },
+                success: function(response) {
+                    alert("Seats booked successfully!");
+                    location.reload();
+                },
+                error: function(error) {
+                    alert("Error booking seats. Try again.");
+                }
+            });
+        });
+    </script>
+    
+
+</body>
+
+</html>

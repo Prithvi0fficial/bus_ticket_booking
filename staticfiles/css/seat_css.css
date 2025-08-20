@@ -1,0 +1,110 @@
+/* Global Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    margin: 0;
+    padding: 0;
+    color: white;
+}
+
+
+/* Seat Layout */
+#seat-container {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    gap: 12px;
+    justify-content: center;
+    margin-top: 100px;
+}
+
+/* Seat Styling */
+.seat {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 10px;
+    font-weight: bold;
+    transition: transform 0.2s ease-in-out, background-color 0.3s;
+    border: 2px solid #ddd;
+    background-color: #4CAF50;
+    color: white;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Hover Effect */
+.seat:hover {
+    transform: scale(1.1);
+}
+
+/* Booked Seat */
+.seat.booked {
+    background-color: #F44336 !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Selected seat style */
+.seat.selected {
+    background-color: #FFD700 !important; /* Gold color */
+    color: black;
+    border: 2px solid #000;
+}
+
+/* Hover effect for better UX */
+.seat:not(.booked):hover {
+    background-color: #FFA500; /* Orange color */
+    transform: scale(1.1);
+}
+
+
+/* Aisle (Empty Space) */
+.aisle {
+    width: 60px;
+    height: 60px;
+    visibility: hidden;
+}
+
+/* Window Seat Styling */
+.window-seat {
+    border: 2px solid #FFD700;
+}
+
+/* Booking Section */
+.bg-white {
+    background-color: #fff;
+    color: black;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Button Styling */
+button {
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+    transform: scale(1.1);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    #seat-container {
+        grid-template-columns: repeat(4, 60px);
+        gap: 8px;
+    }
+
+    .navbar {
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+    }
+
+    .navbar a {
+        display: block;
+        margin: 8px 0;
+    }
+}

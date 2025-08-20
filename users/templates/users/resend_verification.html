@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Resend Verification Email</h2>
+  <form method="post">
+    {% csrf_token %}
+    <input type="email" name="email" placeholder="Enter your email" required>
+    <button type="submit">Resend</button>
+  </form>
+{% endblock %}

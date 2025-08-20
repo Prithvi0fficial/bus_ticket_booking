@@ -1,0 +1,290 @@
+{% load static %}
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 60px;
+      right: 0;
+      background-color: white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 0.5rem;
+      overflow: hidden;
+      z-index: 50;
+    }
+    .dropdown-menu.show {
+      display: block;
+    }
+    .dropdown-menu a {
+      display: block;
+      padding: 10px 16px;
+      color: #333;
+      text-decoration: none;
+    }
+    .dropdown-menu a:hover {
+      background-color: #f1f1f1;
+    }
+    .footer {
+    background: white;
+    color: #333;
+    text-align: center;
+    padding: 20px;
+    position: relative;
+    font-size: 16px;
+}
+
+.footer .social-icons {
+    margin-top: 10px;
+}
+
+.footer .social-icons a {
+    color: #333;
+    text-decoration: none;
+    margin: 0 10px;
+    font-size: 24px;
+    transition: color 0.3s, transform 0.3s;
+}
+
+.footer .social-icons a:hover {
+    color: #ffcc00;
+    transform: scale(1.2);
+}
+
+.footer-links a {
+    color: #333;
+    margin: 0 15px;
+    text-decoration: none;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.footer-links a:hover {
+    color: #888;
+}   
+   .logo{
+    
+   }
+      .navbar {
+      background: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 12px;
+      max-width: 800px;
+      margin: 50px auto;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 font-sans">
+
+<!-- Navbar -->
+  <nav class="bg-white shadow-md px-6 py-4 flex items-center justify-between relative">
+    <div>
+      <a href="{% url 'home' %}">
+        <img src="{% static 'img/ngarage_logo.png' %}" alt="NGarage Logo" style="height: 50px; width: auto;">
+      </a>
+    </div>
+    <div class="hidden md:block md:w-1/3"></div>
+    <div class="w-full md:w-1/3 flex justify-center">
+      <ul class="flex flex-wrap justify-center space-x-4 md:space-x-6 font-medium text-gray-700">
+        <li><a href="{% url 'home' %}" class="hover:text-blue-600 font-semibold">Home</a></li>
+        <a href="{% url 'search_buses' %}">Booking</a>
+        <a href="{% url 'about' %}">About</a>
+      </ul>
+    </div>
+    <div class="w-auto md:w-1/3 flex justify-end relative profile-dropdown">
+      <div class="flex items-center space-x-2 cursor-pointer" onclick="toggleDropdown()">
+        {% if user_profile and user_profile.image %}
+        <img src="{{ user_profile.image.url }}"  alt="User" class="w-10 h-10 rounded-full object-cover border">
+        {% else %}
+        <img src="{% static 'images/default_profile.png' %}" alt="User" class="w-10 h-10 rounded-full object-cover border">
+        {% endif %}
+        <span class="font-medium text-gray-800 hidden sm:inline">
+          {{ request.user.first_name|default:request.user.username }}</span>
+      </div>
+      <div class="dropdown-menu mt-2 w-40" id="dropdownMenu">
+        <a href="{% url 'user_dashboard' %}">Dashboard</a>
+        <a href="{% url 'update_profile' %}">Profile</a>
+        <a href="{% url 'user_logout' %}">Logout</a>
+      </div>
+    </div>
+  </nav>
+  
+
+<!-- Payment Section -->
+<div class="max-w-5xl mx-auto px-4 py-10">
+  <h2 class="text-3xl font-bold text-center mb-6">PAYMENT</h2>
+
+  <!-- Step Progress -->
+  <div class="flex justify-center items-center mb-8 space-x-4 text-sm text-gray-600">
+    <div class="flex flex-col items-center">
+      <div class="w-3 h-3 rounded-full bg-black mb-1"></div>
+      <span>Seat Selection</span>
+    </div>
+    <div class="w-8 border-t-2 border-gray-400"></div>
+    <div class="flex flex-col items-center">
+      <div class="w-3 h-3 rounded-full bg-black mb-1"></div>
+      <span class="font-bold text-black">Payment</span>
+    </div>
+    <div class="w-8 border-t-2 border-gray-400"></div>
+    <div class="flex flex-col items-center">
+      <div class="w-3 h-3 rounded-full bg-gray-300 mb-1"></div>
+      <span class="text-gray-400">Confirmation</span>
+    </div>
+  </div>
+
+  <!-- Payment Options and Summary -->
+  <div class="grid md:grid-cols-2 gap-8">
+    
+<!-- Place this inside your <div class="space-y-6"> ... </div> section -->
+
+<!-- Payment Form -->
+<!-- Payment Form -->
+<form action="{% url 'process_payment' schedule.id %}" method="POST" id="payment-method-form" class="space-y-6">
+  {% csrf_token %}
+
+  <!-- Payment Method Selection -->
+  <div class="border rounded-lg p-4 bg-white">
+      <h3 class="text-lg font-semibold mb-2">Select Payment Method</h3>
+      <select name="payment_method" id="payment_method" class="w-full px-3 py-2 border rounded-md" required>
+          <option value="" disabled selected>Select a payment method</option>
+          <option value="cash">Pay at Counter</option>
+          <option value="razorpay">Pay Online (Razorpay)</option>
+      </select>
+  </div>
+
+  <!-- Hidden Razorpay inputs -->
+  <input type="hidden" id="razorpay_order_id" name="razorpay_order_id">
+  <input type="hidden" id="razorpay_payment_id" name="razorpay_payment_id">
+  <input type="hidden" id="razorpay_signature" name="razorpay_signature">
+
+  <!-- Submit Button -->
+  <button type="submit"
+      class="w-full bg-blue-600 text-white font-semibold py-3 rounded hover:bg-blue-700 transition">
+      Proceed to Payment
+  </button>
+</form>
+
+  
+  {% if client_secret %}
+  <!-- Stripe Payment Section -->
+  <div class="mt-8 border rounded-lg p-6 bg-white">
+    <h3 class="text-lg font-semibold mb-4">Razorpay Payment</h3>
+  
+    <form id="payment-form">
+      <div id="card-element" class="mb-4">
+        <!-- Stripe Element will be inserted here -->
+      </div>
+      <button id="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+        Pay with Razorpay
+      </button>
+    </form>
+  </div>
+  {% endif %}
+
+    <!-- Booking Summary -->
+    <div class="bg-white p-6 rounded-lg border">
+      <h3 class="text-xl font-semibold mb-4">Summary of Booking</h3>
+      <p class="text-gray-700 mb-2"><strong>Seats Number:</strong> {{ seats|join:", " }}</p>
+      <p class="text-gray-700 mb-2"><strong>Route:</strong> {{ bus.route }}</p>
+      <p class="text-gray-900 text-lg font-bold mt-4">Total Amount: <span>₹{{ total_price }}</span></p>
+    </div>
+  </div>
+
+
+</div>
+
+<script>
+  function toggleDropdown() {
+    const menu = document.getElementById("dropdownMenu");
+    menu.classList.toggle("show");
+  }
+</script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  document.getElementById('payment-method-form').addEventListener('submit', function (e) {
+    const method = document.getElementById('payment_method').value;
+  
+    if (method === 'razorpay') {
+      e.preventDefault();
+  
+      const razorpayOrderId = "{{ razorpay_order_id|escapejs }}";
+      const totalAmount = parseFloat("{{ total_price }}");
+      const name = "{{ passenger_name|escapejs }}";
+      const email = "{{ passenger_email|escapejs }}";
+  
+      const options = {
+        key: "{{ razorpay_key|escapejs }}",
+        amount: Math.round(totalAmount * 100),
+        currency: "INR",
+        name: "Bus Ticket Booking",
+        description: "Booking for {{ schedule.route|escapejs }}",
+        order_id: razorpayOrderId,
+        handler: function (response) {
+          document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
+          document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+          document.getElementById('razorpay_signature').value = response.razorpay_signature;
+          document.getElementById('payment-method-form').submit();
+        },
+        prefill: {
+          name: name,
+          email: email
+        },
+        theme: {
+          color: "#3399cc"
+        }
+      };
+  
+      const rzp = new Razorpay(options);
+      rzp.on('payment.failed', function (response){
+        console.error("Payment failed", response.error);
+        alert("Oops! Payment Failed\n" + response.error.description);
+      });
+      rzp.open();
+    }
+  });
+  </script>
+  
+
+
+  
+</body>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+  <!-- Footer Info -->
+  <div class="mt-10 text-sm text-center text-gray-500">
+    <a href="{% url 'terms_and_conditions' %}" class="hover:underline">Terms & Conditions</a> • 
+    <a href="#" class="hover:underline">Cancellation Policy</a>
+  </div>
+  <footer class="footer">
+    <div class="social-icons">
+            <a href="https://facebook.com" target="_blank"><i data-lucide="facebook"></i></a>
+            <a href="https://twitter.com" target="_blank"><i data-lucide="twitter"></i></a>
+            <a href="https://instagram.com" target="_blank"><i data-lucide="instagram"></i></a>
+            <a href="https://linkedin.com" target="_blank"><i data-lucide="linkedin"></i></a>
+    </div>
+    <br>
+    <div class="footer-links">
+        <a href="{% url 'terms_and_conditions' %}">Privacy</a>
+        <a href="{% url 'terms_and_conditions' %}">Terms</a>
+        <a href="{% url 'feedback' %}" >Give Feedback</a>
+    </div>
+    <p>© 2025 NGarage. All Rights Reserved.</p>
+  </footer>
+</html>

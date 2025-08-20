@@ -1,0 +1,52 @@
+
+from django.shortcuts import render, get_object_or_404
+from .models import Bus, Seat, RoutePrice, Discount
+import json
+
+def seat_selection(request, bus_id):
+    bus = get_object_or_404(Bus, id=bus_id)  # Fetch the bus object
+    route_price = get_object_or_404(RoutePrice, route=bus.route)  # Get price from the route
+    
+    base_price = route_price.get_price(bus.is_ac)  # Base seat price (AC/non-AC)
+    
+    # Fetch booked seats
+    booked_seats = list(Seat.objects.filter(bus=bus, is_booked=True).values_list("seat_number", flat=True))
+    
+    # Fetch seat layout dynamically (ensures fallback if missing)
+    seat_layout = bus.get_seat_layout() or []
+    
+    # Fetch discount rules (ordered by highest min_seats first)
+    discounts = Discount.objects.all().order_by('-min_seats')
+
+    # Default values
+    discount_percentage = 0
+    final_price = base_price  # Default price without discount
+
+    # If it's a POST request (user is selecting seats)
+    if request.method == 'POST':
+        selected_seats_json = request.POST.get('seats')  # Get JSON string from POST
+        selected_seats_numbers = json.loads(selected_seats_json) if selected_seats_json else []
+
+        # Calculate total price before discount
+        total_seats = len(selected_seats_numbers)
+        total_price = total_seats * base_price
+
+        # Apply the highest applicable discount
+        for discount in discounts:
+            if total_seats >= discount.min_seats:
+                discount_percentage = discount.discount_percentage
+                break  # Use the highest applicable discount and stop checking
+
+        # Calculate final price after discount
+        discount_amount = (total_price * discount_percentage) / 100
+        final_price = total_price - discount_amount
+
+    # Context to send to the template
+    context = {
+        'bus': bus,
+        'seat_layout': seat_layout,
+        'booked_seats': booked_seats,
+        'seat_price': final_price,  # Pass the discounted price to JavaScript
+    }
+
+    return render(request, 'booking/seat_selection.html', context)

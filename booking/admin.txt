@@ -1,0 +1,61 @@
+from django.contrib import admin
+from .models import Bus, Route, Booking, RoutePrice, BusRoute, BusStop, RouteStop
+from .models import Discount
+# Register Simple Models
+admin.site.register(Route)
+admin.site.register(Booking)
+
+# Bus Admin
+class BusAdmin(admin.ModelAdmin):
+    list_display = ('name', 'number', 'type', 'get_dynamic_price') 
+    list_filter = ('type',)
+    search_fields = ('name', 'number')
+    fields = ('name', 'number', 'type', 'intermediate_stops') 
+ 
+
+    def get_dynamic_price(self, obj):
+        """Display the dynamic price based on AC or Non-AC buses"""
+        route_price = RoutePrice.objects.get(route=obj.route)
+        final_price = route_price.get_price(obj.type == 'AC')
+        return f"₹{final_price:.2f}"
+
+    get_dynamic_price.short_description = "Price (Dynamic)"
+
+admin.site.register(Bus, BusAdmin)
+
+
+# Discountsettings
+admin.site.register(Discount)
+
+
+# Route Price
+@admin.register(RoutePrice)
+class RoutePriceAdmin(admin.ModelAdmin):
+    list_display = ('route', 'base_price', 'ac_increment_percentage')
+
+# Bus Stops
+@admin.register(BusStop)
+class BusStopAdmin(admin.ModelAdmin):
+    list_display = ("name", "city")
+
+# Route Stops (Admin Panel)
+@admin.register(RouteStop)
+class RouteStopAdmin(admin.ModelAdmin):
+    list_display = ("bus_route", "stop", "departure_time", "arrival_time")
+    ordering = ("bus_route", "departure_time")
+
+# Allow Editing Stops Inside a Bus Route
+class RouteStopInline(admin.TabularInline):
+    model = RouteStop
+    extra = 1  # Allows adding multiple stops dynamically
+
+# Bus Route Admin (With Stops)
+@admin.register(BusRoute)
+class BusRouteAdmin(admin.ModelAdmin):
+    list_display = ("bus")  
+    list_filter = ()
+    search_fields = ("bus__name")
+    inlines = [RouteStopInline]  # Enables managing stops inside BusRoute
+admin.site.register(BusRoute, BusRouteAdmin)
+
+    

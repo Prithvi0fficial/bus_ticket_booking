@@ -1,0 +1,10 @@
+set REDIS_DB=2  # db changes for otp
+
+ #to start redis server
+ redis-server redis.windows.conf
+
+ #to reset seats
+ # For resetting all seats (marking them as not booked)
+
+from booking.models import Seat, Booking
+Seat.objects.update(is_booked=False)

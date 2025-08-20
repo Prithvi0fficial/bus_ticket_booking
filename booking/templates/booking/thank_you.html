@@ -1,0 +1,58 @@
+
+{% load static %}
+{% block content %}
+
+<div class="feedback-container">
+    <div>
+        <a href="{% url 'home' %}">
+          <img src="{% static 'img/ngarage_logo.png' %}" alt="NGarage Logo" style="height: 50px; width: auto;">
+        </a>
+      </div>
+  <h1>Thank You for Your Feedback!</h1>
+  <p>We appreciate your valuable input.</p>
+  <p>Your feedback helps us improve our service.</p>
+  <a href="{% url 'home' %}" class="submit-btn">Go Back to Homepage</a>
+</div>
+
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .feedback-container {
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+  }
+  h1 {
+    font-weight: 800;
+    color: #7e57c2;
+  }
+  .submit-btn {
+    background: linear-gradient(45deg, #7e57c2, #ab47bc);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+  .submit-btn:hover {
+    background: linear-gradient(45deg, #ab47bc, #7e57c2);
+    box-shadow: 0 5px 20px rgba(171, 71, 188, 0.4);
+    transform: translateY(-2px);
+  }
+</style>
+{% endblock %}

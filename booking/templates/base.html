@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Online Payment</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div>
+                <a href="{% url 'home' %}">Home</a>
+                <a href="#">About</a>
+                <a href="">Booking</a>
+                <a href="#">Courier</a>
+            </div>
+            <div class="footer">
+                <a href="#">Help</a>
+                <a href="#">Customer Care</a>
+            </div>
+        </nav>
+    <center>
+    <h2>Pay ₹{{ total_price }}</h2>
+
+    <form method="POST" action="{% url 'process_payment' bus.id %}">
+        {% csrf_token %}
+        
+        <label for="payment_method">Select Payment Method:</label>
+        <select name="payment_method" id="payment_method" required>
+            <option value="cash">Cash on Delivery</option>
+            <option value="online">Online Payment</option>
+        </select>
+        
+        <button type="submit">Proceed to Payment</button>
+    </form>
+</center>
+    {% if payment %}
+    <button id="pay-button">Pay with Razorpay</button>
+    <script>
+        document.getElementById("pay-button").onclick = function () {
+            var options = {
+                "key": "{{ payment.key }}", 
+                "amount": "{{ payment.amount }}",
+                "currency": "{{ payment.currency }}",
+                "order_id": "{{ payment.id }}",
+                "handler": function (response){
+                    alert("Payment Successful! Payment ID: " + response.razorpay_payment_id);
+                    window.location.href = "{% url 'process_payment' booking_id=booking.id %}";
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+            var rzp = new Razorpay(options);
+            rzp.open();
+        };
+    </script>
+    {% endif %}
+
+</body>
+</html>

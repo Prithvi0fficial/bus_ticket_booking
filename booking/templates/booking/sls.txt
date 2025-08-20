@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Seat Booking</title>
+    {% load static %}
+
+    <link rel="stylesheet" href="{% static 'css/seat_css.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+        }
+
+        .seat {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.2s ease-in-out;
+            border: 2px solid #ddd;
+            position: relative;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .seat.booked {
+            background-color: #F44336 !important;
+            cursor: not-allowed;
+        }
+
+        .seat:hover {
+            transform: scale(1.1);
+        }
+
+        .aisle {
+            width: 60px;
+            height: 60px;
+            visibility: hidden;
+        }
+
+        .window-seat {
+            border: 2px solid gold;
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white">
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="#">About</a>
+            <a href="{% url 'seat_selection' bus.id %}">Booking</a>
+            <a href="#">Courier</a>
+        </div>
+        <div class="footer">
+            <a href="#">Help</a>
+            <a href="#">Customer Care</a>
+        </div>
+    </nav>
+    <center>
+    <form id="booking-form" method="POST" action="{% url 'book_ticket' bus.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="selected_seats" id="selected-seats">
+
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-lg">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">
+                    {{ bus.name }} ({{ bus.number }}) - Seat Selection
+                </h2>
+
+                <div class="flex justify-center mb-4">
+                    <div class="bg-gray-700 text-white text-center font-bold p-3 w-24 rounded-lg">Driver</div>
+                </div>
+
+                <div id="seat-container" class="grid grid-cols-5 gap-3 justify-center">
+                    <!-- Seats will be dynamically added here -->
+                </div>
+                <div class="mt-4 text-center" text-algin="center">
+                    <p class="text-lg text-gray-800" text-algin="center">Total Seats Selected: <span
+                            id="total-seats">0</span></p>
+                    <p class="text-lg text-gray-800">Total Price: ₹<span id="total-price">0</span></p>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <button type="submit" id="book-button" class="bg-blue-500 text-white px-4 py-2 rounded-lg">
+                        Book Selected Seats
+                    </button>
+                </div>
+                <!-- Book Now Button - Redirects to Confirmation Page -->
+                <div class="mt-4 text-center">
+                    <form id="confirmation-form" method="GET" action="{% url 'confirmation' bus.id %}">
+                        <input type="hidden" name="seats" id="selected-seats-confirmation">
+                        <input type="hidden" name="price" id="total-price-confirmation">
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</center>
+<script>
+$(document).ready(function () {
+    let selectedSeats = [];
+    let bookedSeats = [];
+    let seatPrice = {{ seat_price|default:0|floatformat:2 }};
+    let seatLayout = JSON.parse('{{ seat_layout|safe }}');
+
+    function fetchBookedSeats() {
+        $.ajax({
+            url: `/get_booked_seats/{{ bus.id }}/`, // New API endpoint for booked seats
+            method: "GET",
+            dataType: "json",
+            success: function (data) {
+                bookedSeats = data.booked_seats; // Update booked seats dynamically
+                renderSeats();
+            },
+            error: function () {
+                alert("Error fetching booked seats. Please try again.");
+            }
+        });
+    }
+
+    function renderSeats() {
+        let container = $('#seat-container');
+        container.empty();
+        selectedSeats = [];  // Clear previous selections when reloading
+
+        seatLayout.forEach(row => {
+            row.forEach(seat => {
+                if (seat === 'aisle') {
+                    container.append(`<div class='aisle'></div>`);
+                } else if (seat !== '') {
+                    let isBooked = bookedSeats.includes(seat);
+                    let seatClass = isBooked ? 'seat booked' : 'seat';
+
+                    let seatDiv = `<div class='${seatClass}' data-seat='${seat}'>${seat}</div>`;
+
+                    container.append(seatDiv);
+                }
+            });
+        });
+
+        updateTotal();
+    }
+
+    $(document).on("click", ".seat", function () {
+        if ($(this).hasClass("booked")) return;
+
+        let seatNumber = $(this).data("seat");
+
+        if ($(this).hasClass("selected")) {
+            $(this).removeClass("selected");
+            selectedSeats = selectedSeats.filter(s => s !== seatNumber);
+        } else {
+            $(this).addClass("selected");
+            selectedSeats.push(seatNumber);
+        }
+
+        updateTotal();
+    });
+
+    function updateTotal() {
+        let totalSeats = selectedSeats.length;
+        let totalPrice = totalSeats * seatPrice;
+
+        $("#total-seats").text(totalSeats);
+        $("#total-price").text(totalPrice);
+    }
+
+    $("#book-button").click(function () {
+        if (selectedSeats.length === 0) {
+            alert("Please select at least one seat.");
+            return;
+        }
+
+        $("#selected-seats").val(selectedSeats.join(","));
+        $("#selected-seats-confirmation").val(selectedSeats.join(","));
+        $("#total-price-confirmation").val(selectedSeats.length * seatPrice);
+
+        let confirmationUrl = `/confirmation/{{ bus.id }}/?seats=${selectedSeats.join(",")}&price=${selectedSeats.length * seatPrice}`;
+        window.location.href = confirmationUrl;
+    });
+
+    fetchBookedSeats(); // Get booked seats dynamically
+});
+
+
+</script>
+
+
+<div>
+
+</body>
+
+</html>

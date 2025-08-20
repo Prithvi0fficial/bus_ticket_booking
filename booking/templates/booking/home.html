@@ -1,0 +1,514 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <title>Home | N Garage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .your-class {
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.6) 10%, rgba(0, 0, 0, 0.2) 100%);
+            z-index: -1;
+
+        }
+
+
+
+        /* Animated Background Overlay */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.6) 10%, rgba(0, 0, 0, 0.2) 100%);
+            z-index: -1;
+
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari */
+        }
+
+
+        @keyframes moveBg {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Navigation Bar - Glassmorphism */
+        nav {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 16px 0px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px;
+            width: 100%;
+            /* Full width */
+            position: relative;
+        }
+
+
+        .nav-left,
+        .nav-center,
+        .nav-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-center {
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .nav-right {
+            justify-content: flex-end;
+        }
+
+        .nav-right img {
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-info {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgb(0, 0, 0);
+        }
+
+        nav a {
+            color: #0e0c0c;
+            text-decoration: none;
+            margin: 0 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        nav a::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            bottom: -5px;
+            left: 0;
+            background: #ffcc00;
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        nav a:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .hero h1 {
+            font-size: 60px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.8);
+        }
+
+        .line1,
+        .line2 {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            width: 0;
+        }
+
+        .line1 {
+            animation: typing1 3s steps(30, end) forwards;
+        }
+
+        .line2 {
+            animation: typing2 3s steps(30, end) 3s forwards;
+        }
+
+        @keyframes typing1 {
+            from {
+                width: 0;
+            }
+
+            to {
+                width: 100%;
+            }
+        }
+
+        @keyframes typing2 {
+            from {
+                width: 0;
+            }
+
+            to {
+                width: 100%;
+            }
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        .btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #ffcc00;
+            color: #141E30;
+            font-size: 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.5);
+        }
+
+        .btn:hover {
+            background: #fff;
+            color: #141E30;
+            transform: scale(1.05);
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: relative;
+        }
+
+
+
+        .profile-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #e9e9e9;
+        }
+
+        .profile-info span {
+            font-weight: 500;
+            color: #333;
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 150px;
+            overflow: hidden;
+            z-index: 100;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 12px 16px;
+            font-size: 16px;
+            color: #000;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .dropdown-menu a:hover {
+            background: #f0f0f0;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav-center {
+                position: static;
+                transform: none;
+                order: -1;
+            }
+
+            .profile-info span {
+                display: none;
+            }
+
+            .dropdown-menu {
+                left: 0;
+                right: auto;
+            }
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+
+            width: 100%;
+            font-size: 16px;
+        }
+
+        .footer .social-icons {
+            margin-top: 10px;
+        }
+
+        .footer .social-icons a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 24px;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .footer .social-icons a:hover {
+            color: #ffcc00;
+            transform: scale(1.2);
+        }
+
+        .footer-links a {
+            color: #fff;
+            margin: 0 15px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                /* Hide menu initially */
+                flex-direction: column;
+                position: absolute;
+                top: 60px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgb(255, 255, 255);
+                padding: 10px;
+                border-radius: 10px;
+            }
+
+            .nav-links.active {
+                display: flex;
+                /* Show menu when active */
+            }
+
+            .nav-toggle {
+                display: block;
+                /* Show toggle button */
+            }
+
+            .hero h1 {
+                font-size: 35px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+        }
+
+        footer {
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            flex: 1;
+        }
+
+        .tag p {
+            font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+            font-size: 1.125rem;
+            /* 18px */
+            font-weight: 500;
+            color: #fffffff6;
+            /* similar to gray-800 */
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <span class="nav-toggle" onclick="toggleMenu()"></span>
+    <nav>
+        <div class="nav-left">
+            <a class="lin" href="{% url 'home' %}">
+                <img src="{% static 'img/ngarage_logo.png' %}" alt="NGarage Logo" style="height: 50px; width: auto;">
+            </a>
+        </div>
+
+        <div class="nav-center">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'search_buses' %}">Booking</a>
+            <a href="{% url 'about' %}">About</a>
+        </div>
+
+        <div class="nav-right">
+            <div class="profile-dropdown">
+                <div class="profile-info" onclick="toggleDropdown()">
+                    {% if user_profile and user_profile.image %}
+                    <img src="{{ user_profile.image.url }}" alt="Profile">
+                    {% else %}
+                    <img src="{% static 'images/default_profile.png' %}" alt="Default Profile">
+                    {% endif %}
+                    <span1><strong>{{ request.user.first_name|default:request.user.username }}</strong></span1>
+                </div>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="{% url 'user_dashboard' %}">Dashboard</a>
+                    <a href="{% url 'update_profile' %}">Profile</a>
+                    {% if request.user.is_authenticated and request.user.is_staff %}
+                    <a href="{% url 'admin:index' %}">Back to Admin</a>
+                    {% endif %}
+
+                    <a href="{% url 'user_logout' %}">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="your-class"
+        style="background-image: url('{% static 'img/pexels-lê-minh-977213.jpg' %}'); background-size: cover; background-position: center; min-height: 500px;">
+
+        <section class="hero">
+            <h1>
+                <span class="line1">Book Your Bus Ticket</span><br>
+                <span class="line2">Now!</span>
+            </h1>
+            <div class="tag">
+                <p>Enjoy a seamless and comfortable journey with our top-notch booking service.</p>
+            </div>
+            <a href="{% url 'search_buses' %}" class="btn">Start Your Journey</a>
+        </section>
+    </div>
+    <!-- White Theme Section -->
+    <div style="background: #fff; color: #333; padding: 60px 20px; text-align: center;">
+        <h2 style="font-size: 36px; margin-bottom: 20px;">Why Choose N Garage?</h2>
+        <p style="font-size: 18px; max-width: 800px; margin: 0 auto 40px;">We bring you the most reliable, secure, and
+            comfortable bus booking experience with real-time seat selection, instant confirmation, and 24/7 customer
+            support.</p>
+
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;">
+            <div
+                style="flex: 1 1 250px; padding: 20px; background: #f9f9f9; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <i data-lucide="bus" style="font-size: 40px; color: #ffcc00;"></i>
+                <h3 style="margin-top: 15px;">Real-Time Booking</h3>
+                <p>View available seats, book instantly, and get confirmation on the go.</p>
+            </div>
+            <div
+                style="flex: 1 1 250px; padding: 20px; background: #f9f9f9; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <i data-lucide="shield-check" style="font-size: 40px; color: #ffcc00;"></i>
+                <h3 style="margin-top: 15px;">Secure Payments</h3>
+                <p>Pay safely via Stripe or choose cash on entry—your convenience, our priority.</p>
+            </div>
+            <div
+                style="flex: 1 1 250px; padding: 20px; background: #f9f9f9; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <i data-lucide="phone-call" style="font-size: 40px; color: #ffcc00;"></i>
+                <h3 style="margin-top: 15px;">24/7 Support</h3>
+                <p>We’re always available to help with your journey or bookings.</p>
+            </div>
+        </div>
+
+        <br>
+        <br>
+    </div>
+    <div class="footer">
+        <div class="footer-links">
+            <a href="{% url 'terms_and_conditions' %}">Privacy Policy</a>
+            <a href="{% url 'terms_and_conditions' %}">Terms of Service</a>
+            <a href="{% url 'feedback' %}">Give Feedback</a>
+
+        </div>
+        <p>&copy; 2025 N Garage. All rights reserved.</p>
+        <div class="social-icons">
+            <a href="https://facebook.com" target="_blank"><i data-lucide="facebook"></i></a>
+            <a href="https://twitter.com" target="_blank"><i data-lucide="twitter"></i></a>
+            <a href="https://instagram.com" target="_blank"><i data-lucide="instagram"></i></a>
+            <a href="https://linkedin.com" target="_blank"><i data-lucide="linkedin"></i></a>
+        </div>
+    </div>
+</body>
+<script>
+    function toggleMenu() {
+        document.querySelector('.nav-links').classList.toggle('active');  /* Toggle menu visibility */
+    }
+    lucide.createIcons();
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("/get-user-favicon/")
+            .then(response => response.json())
+            .then(data => {
+                if (data.favicon_url) {
+                    let favicon = document.getElementById("dynamic-favicon");
+                    favicon.href = data.favicon_url;
+                }
+            })
+            .catch(error => console.error("Error loading favicon:", error));
+    });
+</script>
+<script>
+    function toggleDropdown() {
+        document.getElementById("dropdownMenu").classList.toggle("show");
+    }
+
+    document.addEventListener('click', function (e) {
+        const dropdown = document.getElementById('dropdownMenu');
+        const profile = document.querySelector('.profile-info');
+        if (!profile.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+
+</script>
+
+</html>
