@@ -19,9 +19,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Redirect users after login/logout
-LOGIN_URL = "/users/auth/"
-LOGIN_REDIRECT_URL = "dashboard"  # Redirect after login
-LOGOUT_REDIRECT_URL = "/users/auth/" # Redirect after logout
+LOGIN_URL = '/users/auth/'
+LOGIN_REDIRECT_URL = '/'  # Redirect after login
+LOGOUT_REDIRECT_URL = '/'  # Redirect after logout
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
