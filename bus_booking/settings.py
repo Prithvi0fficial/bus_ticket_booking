@@ -180,7 +180,7 @@ STATIC_URL = 'static/'
 
 # Directories where Django will look for static files (e.g., from apps or manually placed static files)
 STATICFILES_DIRS = [
-    r"M:\bus_booking_project\booking\static",  # Raw string for Windows paths
+    BASE_DIR / "static",  # Raw string for Windows paths
 ]
 
 # The directory where static files will be collected during the 'collectstatic' command
