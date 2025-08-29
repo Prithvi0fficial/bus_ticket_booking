@@ -33,7 +33,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#i#cb&f7w(^rdu03bu6_+47_bld5gni2*1fx+#g5%sk1i2lcdt'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -149,12 +149,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'  # Use your email provider's SMTP server
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'ngaragesservices@gmail.com'  # Replace with your email
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # Replace with your email
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")   # Use an app password, not your real password
 
 
-RAZORPAY_KEY_ID = "rzp_test_0E7Q1E6w6yOJko"
-RAZORPAY_KEY_SECRET = "9GwWueBXplciZXcyX5hiIan7"
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET')
 
 
 # Internationalization
