@@ -11,7 +11,7 @@ from .views import auth_view,user_logout
 urlpatterns = [
     # User authentication (Login & Signup)
     path("auth/", auth_view, name="auth"),
-    path("login/", auth_view, name="login"),  
+    # path("login/", auth_view, name="login"),  
 
 
 
