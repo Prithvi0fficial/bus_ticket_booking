@@ -128,7 +128,7 @@ from django.utils.dateparse import parse_date
 
 from django.contrib.auth.decorators import login_required
 
-@login_required(login_url='/users/auth/') 
+# @login_required(login_url='/users/auth/') 
 def home(request):
     return render(request, 'booking/home.html')
 #==================================================================================
