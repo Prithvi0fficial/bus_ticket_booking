@@ -10,4 +10,4 @@ django-widget-tweaks
 razorpay
 reportlab
 gunicorn
-
+qrcode
