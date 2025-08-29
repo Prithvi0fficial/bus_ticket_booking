@@ -8,4 +8,5 @@ django-extensions
 django-widget-tweaks
 razorpay
 reportlab
+gunicorn
 
