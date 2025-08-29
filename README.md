@@ -3,6 +3,8 @@
 ## Description
 A web-based bus ticket booking system with dynamic seat selection, Razorpay payments, and email ticket confirmation.
 
+[Click here to view the live demo](https://bus-ticket-booking-pqjs.onrender.com)
+
 ## Features
 - Dynamic seat booking with bus layout
 - Cash on delivery & Razorpay payment
@@ -20,3 +22,6 @@ A web-based bus ticket booking system with dynamic seat selection, Razorpay paym
 1. Clone the repository
 ```bash
 https://github.com/Prithvi0fficial/bus_ticket_booking.git
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
