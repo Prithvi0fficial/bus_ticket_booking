@@ -3,7 +3,6 @@ Django
 django-allauth
 django-crispy-forms
 crispy-bootstrap5
-django-debug-toolbar
 python-dotenv
 django-extensions
 django-widget-tweaks
@@ -11,3 +10,4 @@ razorpay
 reportlab
 gunicorn
 qrcode
+whitenoise
