@@ -15,19 +15,10 @@ from django.utils.crypto import get_random_string
 from django.conf import settings
 from .models import CustomUser  # Make sure this points to your custom user model
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.utils.crypto import get_random_string
-from django.utils import timezone
-from django.core.mail import send_mail
-from django.urls import reverse
-from django.contrib.auth import authenticate, login
-from django.conf import settings
-from .models import CustomUser  # make sure your CustomUser is imported
-
 def auth_view(request):
     if request.method == "POST":
         action = request.POST.get("action")
+
         email = request.POST.get("email")
         password = request.POST.get("password")
 
@@ -47,7 +38,10 @@ def auth_view(request):
                 messages.error(request, "❌ Email already registered. Try logging in.")
                 return redirect("auth")
 
+            # Generate verification token
             verification_token = get_random_string(32)
+
+            # Create user with is_verified=False
             user = CustomUser.objects.create_user(
                 username=username,
                 email=email,
@@ -56,7 +50,9 @@ def auth_view(request):
                 verification_token=verification_token,
                 verification_token_created_at=timezone.now()
             )
+            user.save()
 
+            # Send verification email
             verify_link = request.build_absolute_uri(
                 reverse("verify_email", args=[verification_token])
             )
@@ -69,7 +65,7 @@ def auth_view(request):
                 fail_silently=False,
             )
 
-            messages.success(request, "📩 Verification link sent to your email.")
+            messages.success(request, "📩 Verification link sent to your email. Please verify to log in.")
             return redirect("auth")
 
         elif action == "login":
@@ -79,9 +75,12 @@ def auth_view(request):
             if user is not None:
                 if user.is_verified or user.is_superuser:
                     login(request, user)
-                    if user.is_superuser or user.is_staff:
-                        return redirect("admin:index")
-                    return redirect("home")
+                    if user.is_superuser:
+                        return redirect("admin:index")  # Django admin panel home page
+                    elif user.is_staff:
+                        return redirect("admin:index")  # your custom staff dashboard URL name
+                    else:
+                        return redirect("home")
                 else:
                     messages.error(request, "❌ Email not verified. Please check your inbox.")
             else:
@@ -94,7 +93,7 @@ def auth_view(request):
                 user.reset_token = reset_token
                 user.save()
 
-                reset_link = request.build_absolute_uri(f"/reset-password/{reset_token}/")
+                reset_link = f"http://127.0.0.1:8000/reset-password/{reset_token}/"
                 send_mail(
                     "Password Reset Request",
                     f"Click the link below to reset your password:\n{reset_link}",
@@ -105,13 +104,10 @@ def auth_view(request):
                 messages.success(request, "📩 Password reset link sent to your email.")
             else:
                 messages.error(request, "❌ Email not found in our records.")
+
             return redirect("auth")
 
-    # Always return the template with context
-    return render(request, "users/auth.html", {
-        "page_title": "Login / Signup",
-    })
-
+    return render(request, "users/auth.html")
 
 #------------------------------------------------------------------------------------------------------------------------
 # password reset    
