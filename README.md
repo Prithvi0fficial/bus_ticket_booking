@@ -6,7 +6,8 @@ A web-based bus ticket booking system with dynamic seat selection, Razorpay paym
 [Click here to view the live demo](https://bus-ticket-booking-pqjs.onrender.com)
 
 ⭐IMPT:
-Please select the date 31 aug
+
+Please select the date 29 sep or 3 oct 
 and route Mangalore To Bangalore
 
 ## Features
