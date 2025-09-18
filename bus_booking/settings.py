@@ -12,11 +12,15 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from pathlib import Path
+from dotenv import load_dotenv
 import dj_database_url
 from decouple import config
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env file explicitly
+load_dotenv(BASE_DIR / ".env")
 
 
 # Redirect users after login/logout
@@ -123,9 +127,14 @@ WSGI_APPLICATION = 'bus_booking.wsgi.application'
 # }
 
 # use this host on render
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=config("DATABASE_URL")
+#     )
+# }
 DATABASES = {
-    'default': dj_database_url.config(
-        default=config("DATABASE_URL")
+    "default": dj_database_url.config(
+        default=config("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
     )
 }
 
