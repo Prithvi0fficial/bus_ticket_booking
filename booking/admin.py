@@ -76,20 +76,20 @@ class BookingAdmin(admin.ModelAdmin):
         return "-"
     get_route.short_description = 'Route'
 
-    def save_model(self, request, obj, form, change):
-        # Set the bus based on selected schedule
-        if obj.schedule:
-            obj.bus = obj.schedule.bus  # 👈 this line is necessary
+def save_model(self, request, obj, form, change):
+    # Safely set bus and route based on schedule
+    if obj.schedule:
+        if obj.schedule.bus:
+            obj.bus = obj.schedule.bus
+        if obj.schedule.route:
             obj.route = obj.schedule.route
-        super().save_model(request, obj, form, change)
+    super().save_model(request, obj, form, change)
 
-        # Now, after object is saved, update seat_numbers
-        if 'seats' in form.changed_data:
-            seat_numbers_list = obj.seats.all().values_list('seat_number', flat=True)
-            obj.seat_numbers = ", ".join(seat_numbers_list)
-            obj.save()  # Save again after setting seat_numbers
-
-
+    # Update seat_numbers if seats changed
+    if 'seats' in form.changed_data:
+        seat_numbers_list = obj.seats.all().values_list('seat_number', flat=True)
+        obj.seat_numbers = ", ".join(seat_numbers_list)
+        obj.save()
 
 
 class BusAdmin(admin.ModelAdmin):
@@ -101,12 +101,18 @@ class BusAdmin(admin.ModelAdmin):
 
     def get_dynamic_price(self, obj):
         """Retrieve the dynamic price for the bus based on its route and type."""
+        if not obj.route:
+            return "No Route"
         route_price = RoutePrice.objects.filter(route=obj.route).first()
         if route_price:
-            is_ac_bus = obj.type == "AC"
-            final_price = route_price.get_price(is_ac_bus)
-            return f"₹{final_price:.2f}"
+            try:
+                is_ac_bus = obj.type == "AC"
+                final_price = route_price.get_price(is_ac_bus)
+                return f"₹{final_price:.2f}"
+            except Exception:
+                return "Invalid Price"
         return "Price Not Available"
+
 
     get_dynamic_price.short_description = "Price (Dynamic)"
 

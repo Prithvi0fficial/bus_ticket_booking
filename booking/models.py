@@ -1,6 +1,8 @@
 from django.db import models
 import uuid  # to generate unique pnr
 from django.utils import timezone
+from django.utils.timezone import now
+
 from django.conf import settings
 
 import json 
@@ -339,6 +341,7 @@ class SeatBooking(models.Model):
         seat_info = self.seat_number or "No Seat"
         passenger_name = self.booking.passenger_name if self.booking else "No Booking"
         return f"{seat_info} - {passenger_name}"
+
 
     
 
