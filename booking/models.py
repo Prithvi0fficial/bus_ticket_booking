@@ -333,12 +333,10 @@ class SeatBooking(models.Model):
     bus = models.ForeignKey('Bus', on_delete=models.CASCADE, related_name="booked_seats")
     seat_number = models.CharField(max_length=10)
     is_booked = models.BooleanField(default=True)
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
-
-
+    booking = models.ForeignKey('Booking', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        seat_info = str(self.seat) if self.seat else "No Seat"
+        seat_info = self.seat_number or "No Seat"
         passenger_name = self.booking.passenger_name if self.booking else "No Booking"
         return f"{seat_info} - {passenger_name}"
 
