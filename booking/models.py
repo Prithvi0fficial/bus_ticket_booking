@@ -235,39 +235,43 @@ from django.utils.timezone import now, timezone
 from .models import Bus, Route, BusSchedule, Seat  # Adjust as needed
 # from .utils import process_stripe_refund  # Optional: If using Stripe refunds
 class Booking(models.Model):
-    bus = models.ForeignKey(Bus, on_delete=models.CASCADE)
-    route = models.ForeignKey(Route, on_delete=models.CASCADE, null=True, blank=True)
+    bus = models.ForeignKey("Bus", on_delete=models.CASCADE)
+    route = models.ForeignKey("Route", on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
-    schedule = models.ForeignKey(BusSchedule, on_delete=models.CASCADE)
-    seats = models.ManyToManyField(Seat, related_name="booking_seats")
+    schedule = models.ForeignKey("BusSchedule", on_delete=models.CASCADE, related_name="bookings")
+    seats = models.ManyToManyField("Seat", related_name="booking_seats")
     seat_numbers = models.CharField(max_length=200, blank=True, null=True)
 
     date = models.DateField(default=now)
     booked_at = models.DateTimeField(auto_now_add=True)
-    is_confirmed = models.BooleanField(default=False)
-    
+    cancelled_at = models.DateTimeField(null=True, blank=True)
 
-    BUS_TYPE_CHOICES = [('AC', 'AC'), ('Non-AC', 'Non-AC')]
+    is_confirmed = models.BooleanField(default=False)
+
+    BUS_TYPE_CHOICES = [
+        ("AC", "AC"),
+        ("Non-AC", "Non-AC"),
+    ]
     type = models.CharField(max_length=10, choices=BUS_TYPE_CHOICES)
+
     price = models.DecimalField(max_digits=7, decimal_places=2)
-    total_price = models.FloatField()
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)  # ✅ changed FloatField → DecimalField for money safety
 
     passenger_name = models.CharField(max_length=100)
     passenger_age = models.IntegerField()
     passenger_email = models.EmailField()
-    payment = models.ForeignKey('Payment', on_delete=models.CASCADE, related_name='booking_payment', null=True, blank=True)
-
 
 
     STATUS_CHOICES = [
-        ('Booked', 'Booked'),
-        ('Cancelled', 'Cancelled'),
+        ("Booked", "Booked"),
+        ("Cancelled", "Cancelled"),
     ]
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Booked')
-    cancelled_at = models.DateTimeField(null=True, blank=True)
-    refund_status = models.CharField(max_length=50, null=True, blank=True)  # Optional: 'Pending', 'Completed', etc.
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Booked")
 
+    refund_status = models.CharField(max_length=50, null=True, blank=True)  # Optional: 'Pending', 'Completed'
 
+    def __str__(self):
+        return f"Booking {self.id} - {self.passenger_name}"
     def confirm_booking(self):
         """Mark seats as confirmed."""
         self.is_confirmed = True
@@ -346,21 +350,31 @@ class SeatBooking(models.Model):
     
 
     #----------------------------------------------------------------------------------------
-class Payment(models.Model):
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="payments")
-    transaction_id = models.CharField(max_length=100, unique=True, blank=True, null=True)  # Store payment gateway transaction ID
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(
-        max_length=20,
-        choices=[("Pending", "Pending"), ("Completed", "Completed"), ("Failed", "Failed")],
-        default="Pending"
-    )
-    payment_method = models.CharField(max_length=50, choices=[("Online", "Online"), ("Cash", "Cash")], default="Online")
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"Payment {self.transaction_id} - {self.status}"
 
+class Payment(models.Model):
+    #  use OneToOne so each booking has exactly 1 payment
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name="payment")
+
+    transaction_id = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    PAYMENT_STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Completed", "Completed"),
+        ("Failed", "Failed"),
+    ]
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="Pending")
+
+    PAYMENT_METHOD_CHOICES = [
+        ("Online", "Online"),
+        ("Cash", "Cash"),
+    ]
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, default="Online")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment {self.transaction_id or 'N/A'} - {self.status}"
 #feedback
 from django.conf import settings
 from django.db import models
