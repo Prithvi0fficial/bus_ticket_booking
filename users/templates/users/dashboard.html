@@ -209,47 +209,56 @@
             </tr>
           </thead>
           <tbody>
-            {% for booking in bookings %}
-            <tr class="border-t text-gray-700 hover:bg-gray-50 transition">
-              <td class="p-3 font-medium text-gray-800">{{ booking.id }}</td>
-              <td class="p-3">{{ booking.date }}</td>
-              <td class="p-3">{{ booking.bus.name }}</td>
-              <td class="p-3">
-                {{ booking.seat_numbers }}
-              </td>
-              
-              <td class="p-3">
-                {{ booking.route.source }} → {{ booking.route.destination }}
-              </td>
-              <td class="p-3">
-                {% if booking.status == 'Cancelled' %}
-                <span class="text-red-500 font-medium">Cancelled</span>
-                {% elif booking.status == 'Booked' %}
-                <span class="text-green-600 font-medium">Booked</span>
-                {% else %}
-                <span class="text-gray-400 italic">No actions</span>
-                {% endif %}
-              </td>
-              <td class="p-3">
-                {% if booking.status == 'Booked' and booking.schedule.departure_time > now %}
-                <form method="post" action="{% url 'cancel_booking' booking.id %}"
+        {% for booking in bookings %}
+        <tr class="border-t text-gray-700 hover:bg-gray-50 transition">
+          <td class="p-3 font-medium text-gray-800">{{ booking.id }}</td>
+          <td class="p-3">{{ booking.date }}</td>
+          <td class="p-3">
+            {% if booking.schedule and booking.schedule.bus %}
+              {{ booking.schedule.bus.name }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td class="p-3">
+            {{ booking.seat_numbers|default:"—" }}
+          </td>
+          <td class="p-3">
+            {% if booking.schedule and booking.schedule.route %}
+              {{ booking.schedule.route.source }} → {{ booking.schedule.route.destination }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td class="p-3">
+            {% if booking.status == 'Cancelled' %}
+              <span class="text-red-500 font-medium">Cancelled</span>
+            {% elif booking.status == 'Booked' %}
+              <span class="text-green-600 font-medium">Booked</span>
+            {% else %}
+              <span class="text-gray-400 italic">No actions</span>
+            {% endif %}
+          </td>
+          <td class="p-3">
+            {% if booking.status == 'Booked' and booking.schedule and booking.schedule.departure_time > now %}
+            <form method="post" action="{% url 'cancel_booking' booking.id %}"
                   onsubmit="return confirm('Are you sure you want to cancel this ticket?');">
-                  {% csrf_token %}
-                  <button type="submit"
-                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition duration-200">
-                    Cancel
-                  </button>
-                </form>
-                {% elif booking.status == 'Booked' %}
-                <span class="text-gray-400 italic">Past departure</span>
-                {% else %}
-                <span class="text-gray-400 italic">—</span>
-                {% endif %}
-              </td>
+              {% csrf_token %}
+              <button type="submit"
+                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition duration-200">
+                Cancel
+              </button>
+            </form>
+            {% elif booking.status == 'Booked' %}
+              <span class="text-gray-400 italic">Past departure</span>
+            {% else %}
+              <span class="text-gray-400 italic">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
 
-            </tr>
-            {% endfor %}
-          </tbody>
         </table>
       </div>
       {% else %}
