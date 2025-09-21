@@ -233,15 +233,18 @@ from booking.models import Booking  # Your Booking model
 from datetime import datetime
 from .forms import ProfileUpdateForm  # Optional form to update details
 from django.utils import timezone
+
+
 @login_required
 def user_dashboard(request):
     user = request.user
-    profile = Profile.objects.get(user=user)
+    
+    # Ensure profile exists (create if missing)
+    profile, created = Profile.objects.get_or_create(user=user)
 
     # Booking history - both past and upcoming
     bookings = Booking.objects.filter(user=user).order_by('-booked_at')
     
-
     context = {
         'profile': profile,
         'bookings': bookings,
@@ -360,8 +363,3 @@ from django.shortcuts import render
 def terms_and_conditions(request):
     return render(request,'users/terms.html')
 
-#staff
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.shortcuts import render
-
-# Custom decorator to check staff status
