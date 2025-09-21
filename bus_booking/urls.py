@@ -24,6 +24,7 @@ urlpatterns = [
     path('users/', include('users.urls')),  # User authentication
     path('', include('booking.urls')),      # Booking app URLs
 ]
+if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
