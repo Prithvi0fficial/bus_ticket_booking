@@ -1,6 +1,4 @@
 # Bus Booking System (Django)
-SERVER IS UNDER MAINTAINACE
-WILL BE AVAILABLE 21 sep 2025
 
 ## Description
 A web-based bus ticket booking system with dynamic seat selection, Razorpay payments, and email ticket confirmation.
