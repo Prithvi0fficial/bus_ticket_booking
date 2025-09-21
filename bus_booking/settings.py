@@ -41,7 +41,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "bus-ticket-booking-pqjs.onrender.com").split(",")
 
