@@ -13,5 +13,7 @@ qrcode
 whitenoise
 psycopg2-binary
 dj-database-url
-python-decouple
+python-decouple 
+pip install django-anymail[brevo]
+
 
