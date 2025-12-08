@@ -271,22 +271,30 @@ def cancel_booking(request, booking_id):
             messages.error(request, "Cannot cancel after departure time.")
             return redirect('user_dashboard')
 
-        # Check payment
-        payment = booking.payments.first()
+        # GET PAYMENT (ONE-TO-ONE FIELD)
+        payment = booking.payment if hasattr(booking, "payment") else None
 
-        if payment and payment.payment_method == 'Stripe':
+        # ---- RAZORPAY REFUND HANDLING ----
+        if payment and payment.payment_method == 'Online':
             try:
-                refund = payment.refund_payment()
+                # Your Razorpay refund function
+                payment.refund_payment()
+
                 booking.status = 'Cancelled'
+                booking.is_confirmed = False
                 booking.save()
-                messages.success(request, "Ticket cancelled and refunded successfully.")
+
+                messages.success(request, "Ticket cancelled and amount refunded successfully.")
             except Exception as e:
                 messages.error(request, f"Refund failed: {str(e)}")
+
         else:
+            # CASH / NO PAYMENT
             booking.status = 'Cancelled'
             booking.is_confirmed = False
             booking.save()
-            messages.success(request, "Ticket cancelled successfully.")
+
+            messages.success(request, "Ticket cancelled successfully (Cash payment).")
 
         return redirect('user_dashboard')
 
