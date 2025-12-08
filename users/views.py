@@ -253,6 +253,10 @@ def user_dashboard(request):
     return render(request, 'users/dashboard.html', context)
 
 @login_required
+import logging
+logger = logging.getLogger(__name__)
+logger.error("CANCEL BOOKING VIEW CALLED for booking %s" % booking_id)
+
 def cancel_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
