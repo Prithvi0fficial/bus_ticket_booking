@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'django_extensions',
     'widget_tweaks',
+    'anymail',
 
 ]
 
@@ -149,15 +150,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000']  # Add your domain/IP here
 
-
+ANYMAIL = {
+    "BREVO_API_KEY": os.environ.get("BREVO_API_KEY"),
+}
 # Email configuration
 load_dotenv() 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Use your email provider's SMTP server
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # Replace with your email
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")   # Use an app password, not your real password
+EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@example.com")
 
 
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID')
