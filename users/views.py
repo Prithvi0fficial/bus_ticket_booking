@@ -233,6 +233,10 @@ from booking.models import Booking  # Your Booking model
 from datetime import datetime
 from .forms import ProfileUpdateForm  # Optional form to update details
 from django.utils import timezone
+import logging
+logger = logging.getLogger(__name__)
+
+
 
 
 @login_required
@@ -253,40 +257,43 @@ def user_dashboard(request):
     return render(request, 'users/dashboard.html', context)
 
 @login_required
-import logging
-logger = logging.getLogger(__name__)
-logger.error("CANCEL BOOKING VIEW CALLED for booking %s" % booking_id)
-
 def cancel_booking(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    logger.error(f"CANCEL BOOKING VIEW CALLED for booking {booking_id}")
 
-    if booking.status == 'Cancelled':
-        messages.warning(request, "This ticket is already cancelled.")
-        return redirect('user_dashboard')
+    try:
+        booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
-    if timezone.now() > booking.schedule.departure_time:
-        messages.error(request, "Cannot cancel after departure time.")
-        return redirect('user_dashboard')
+        if booking.status == 'Cancelled':
+            messages.warning(request, "This ticket is already cancelled.")
+            return redirect('user_dashboard')
 
-    # Check if there are payments associated with this booking
-    payment = booking.payments.first()  # Getting the first related payment
+        if timezone.now() > booking.schedule.departure_time:
+            messages.error(request, "Cannot cancel after departure time.")
+            return redirect('user_dashboard')
 
-    if payment and payment.payment_method == 'Stripe':
-        # Call refund logic here (pseudo-code)
-        try:
-            refund = payment.refund_payment()  # Assuming you have this method in your Payment model
+        # Check payment
+        payment = booking.payments.first()
+
+        if payment and payment.payment_method == 'Stripe':
+            try:
+                refund = payment.refund_payment()
+                booking.status = 'Cancelled'
+                booking.save()
+                messages.success(request, "Ticket cancelled and refunded successfully.")
+            except Exception as e:
+                messages.error(request, f"Refund failed: {str(e)}")
+        else:
             booking.status = 'Cancelled'
+            booking.is_confirmed = False
             booking.save()
-            messages.success(request, "Ticket cancelled and refunded successfully.")
-        except Exception as e:
-            messages.error(request, f"Refund failed: {str(e)}")
-    else:
-        booking.status = 'Cancelled'
-        booking.is_confirmed = False
-        booking.save()
-        messages.success(request, "Ticket cancelled successfully.")
+            messages.success(request, "Ticket cancelled successfully.")
 
-    return redirect('user_dashboard')
+        return redirect('user_dashboard')
+
+    except Exception as e:
+        logger.error(f"CANCEL BOOKING ERROR: {str(e)}")
+        raise
+
 
 @login_required
 def update_profile(request):
