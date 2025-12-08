@@ -14,7 +14,7 @@ whitenoise
 psycopg2-binary
 dj-database-url
 python-decouple 
-pip install "django-anymail[brevo]" --upgrade
+django-anymail[brevo]
 
 
 
