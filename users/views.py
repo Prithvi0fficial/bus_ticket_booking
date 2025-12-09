@@ -228,11 +228,12 @@ def user_logout(request):
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Profile  # Adjust based on your app name
+from .models import Profile  # Adjust based on app name
 from booking.models import Booking  # Your Booking model
 from datetime import datetime
 from .forms import ProfileUpdateForm  # Optional form to update details
 from django.utils import timezone
+from booking.models import Booking, SeatBooking
 import logging
 logger = logging.getLogger(__name__)
 
