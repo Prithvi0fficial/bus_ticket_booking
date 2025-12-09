@@ -258,41 +258,49 @@ def user_dashboard(request):
 
 @login_required
 def cancel_booking(request, booking_id):
-    logger.error(f"---- CANCEL BOOKING START for ID: {booking_id} ----")
+    logger.error(f"CANCEL BOOKING VIEW CALLED for booking {booking_id}")
 
     try:
         booking = get_object_or_404(Booking, id=booking_id, user=request.user)
-        logger.error(f"Booking loaded: status={booking.status}, confirmed={booking.is_confirmed}")
+        logger.error(f"Loaded booking. Status={booking.status}, confirmed={booking.is_confirmed}")
 
-        # Already cancelled
         if booking.status == 'Cancelled':
-            logger.error("BLOCKED: Already cancelled")
             messages.warning(request, "This ticket is already cancelled.")
             return redirect('user_dashboard')
 
-        # After departure?
-        now = timezone.now()
-        departure = booking.schedule.departure_time
-        logger.error(f"Time check: now={now}, departure={departure}")
-
-        if now > departure:
-            logger.error("BLOCKED: Cancellation after departure time")
+        if timezone.now() > booking.schedule.departure_time:
             messages.error(request, "Cannot cancel after departure time.")
             return redirect('user_dashboard')
 
-        # GET payment (OneToOne)
         payment = getattr(booking, "payment", None)
-        logger.error(f"Payment object: {payment}")
+        logger.error(f"Payment: {payment}")
 
-        # FOR BOTH ONLINE AND CASH — Just cancel the booking
+        # --------------------------------
+        # RELEASE SEATS 
+        # --------------------------------
+        from booking.models import Seat, SeatBooking
+
+        seat_bookings = SeatBooking.objects.filter(booking=booking)
+        logger.error(f"Found {seat_bookings.count()} SeatBooking entries to delete.")
+
+        for sb in seat_bookings:
+            if sb.seat:
+                sb.seat.is_booked = False
+                sb.seat.booking = None
+                sb.seat.save()
+        seat_bookings.delete()
+
+        logger.error("Seat release completed.")
+
+        # --------------------------------
+        # CANCEL BOOKING
+        # --------------------------------
         booking.status = 'Cancelled'
         booking.is_confirmed = False
         booking.save()
 
-        logger.error("Booking marked as Cancelled successfully.")
-
         messages.success(request, "Ticket cancelled successfully.")
-        logger.error("---- CANCEL BOOKING END ----")
+        logger.error("CANCELLATION SUCCESS")
 
         return redirect('user_dashboard')
 
