@@ -258,8 +258,7 @@ def user_dashboard(request):
 
 @login_required
 def cancel_booking(request, booking_id):
-    logger.error(f"CANCEL BOOKING VIEW CALLED for booking {booking_id}")
-
+    logger.error(f"---- CANCEL BOOKING START for ID: {booking_id} ----")
     try:
         booking = get_object_or_404(Booking, id=booking_id, user=request.user)
         logger.error(f"Loaded booking. Status={booking.status}, confirmed={booking.is_confirmed}")
@@ -272,41 +271,76 @@ def cancel_booking(request, booking_id):
             messages.error(request, "Cannot cancel after departure time.")
             return redirect('user_dashboard')
 
+        # If you have payment-related cancellation logic, do it BEFORE releasing seats
         payment = getattr(booking, "payment", None)
         logger.error(f"Payment: {payment}")
 
-        # --------------------------------
-        # RELEASE SEATS 
-        # --------------------------------
-        from booking.models import Seat, SeatBooking
+        # ----------------------
+        # 1) Release Seat objects referenced by Booking.seats (the primary seat table)
+        # ----------------------
+        seats = list(booking.seats.all())  # evaluate queryset now
+        logger.error(f"Releasing {len(seats)} Seat objects from Booking {booking.id}")
+        for seat in seats:
+            try:
+                # Seat.cancel_booking resets is_booked, is_locked, is_selected, selected_by, timestamps
+                seat.cancel_booking()
+            except Exception:
+                # fallback to a safe manual reset in case method changed
+                seat.is_booked = False
+                seat.is_selected = False
+                seat.selected_by = None
+                seat.selected_at = None
+                seat.is_locked = False
+                seat.locked_at = None
+                seat.save()
 
-        seat_bookings = SeatBooking.objects.filter(booking=booking)
-        logger.error(f"Found {seat_bookings.count()} SeatBooking entries to delete.")
+        # ----------------------
+        # 2) Remove SeatBooking rows that reference this booking
+        #    SeatBooking stores seat_number + bus; remove rows and also ensure Seat rows are cleared
+        # ----------------------
+        from booking.models import SeatBooking  # your SeatBooking class is in same file as models
 
-        for sb in seat_bookings:
-            if sb.seat:
-                sb.seat.is_booked = False
-                sb.seat.booking = None
-                sb.seat.save()
-        seat_bookings.delete()
+        sb_qs = SeatBooking.objects.filter(booking=booking)
+        sb_count = sb_qs.count()
+        logger.error(f"Deleting {sb_count} SeatBooking rows for Booking {booking.id}")
 
-        logger.error("Seat release completed.")
+        # For safety, also try to update any Seat rows that match these seat_numbers (bus + seat_number)
+        # so that even if SeatBooking wasn't created from booking.seats relationship, seats are freed.
+        seat_numbers = list(sb_qs.values_list('seat_number', flat=True).distinct())
+        if seat_numbers:
+            Seat.objects.filter(bus=booking.bus, seat_number__in=seat_numbers).update(
+                is_booked=False,
+                is_selected=False,
+                selected_by=None,
+                selected_at=None,
+                is_locked=False,
+                locked_at=None
+            )
 
-        # --------------------------------
-        # CANCEL BOOKING
-        # --------------------------------
+        sb_qs.delete()
+
+        # ----------------------
+        # 3) Clear the Booking.seats M2M relationship (important so booking.seats queries return empty)
+        # ----------------------
+        booking.seats.clear()
+
+        # ----------------------
+        # 4) Finally update Booking status
+        # ----------------------
         booking.status = 'Cancelled'
         booking.is_confirmed = False
+        booking.cancelled_at = timezone.now()
         booking.save()
 
+        logger.error("Booking marked as Cancelled and seats released successfully.")
         messages.success(request, "Ticket cancelled successfully.")
-        logger.error("CANCELLATION SUCCESS")
-
+        logger.error("---- CANCEL BOOKING END ----")
         return redirect('user_dashboard')
 
     except Exception as e:
-        logger.error(f"CANCEL BOOKING ERROR: {str(e)}")
+        logger.exception(f"CANCEL BOOKING ERROR: {e}")
         raise
+
 
 
 @login_required
