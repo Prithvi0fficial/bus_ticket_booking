@@ -277,7 +277,7 @@ def cancel_booking(request, booking_id):
         # ---- RAZORPAY REFUND HANDLING ----
         if payment and payment.payment_method == 'Online':
             try:
-                # Your Razorpay refund function
+                # Razorpay refund function
                 payment.refund_payment()
 
                 booking.status = 'Cancelled'
