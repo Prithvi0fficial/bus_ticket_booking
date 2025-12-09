@@ -258,43 +258,41 @@ def user_dashboard(request):
 
 @login_required
 def cancel_booking(request, booking_id):
-    logger.error(f"CANCEL BOOKING VIEW CALLED for booking {booking_id}")
+    logger.error(f"---- CANCEL BOOKING START for ID: {booking_id} ----")
 
     try:
         booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+        logger.error(f"Booking loaded: status={booking.status}, confirmed={booking.is_confirmed}")
 
+        # Already cancelled
         if booking.status == 'Cancelled':
+            logger.error("BLOCKED: Already cancelled")
             messages.warning(request, "This ticket is already cancelled.")
             return redirect('user_dashboard')
 
-        if timezone.now() > booking.schedule.departure_time:
+        # After departure?
+        now = timezone.now()
+        departure = booking.schedule.departure_time
+        logger.error(f"Time check: now={now}, departure={departure}")
+
+        if now > departure:
+            logger.error("BLOCKED: Cancellation after departure time")
             messages.error(request, "Cannot cancel after departure time.")
             return redirect('user_dashboard')
 
-        # GET PAYMENT (ONE-TO-ONE FIELD)
-        payment = booking.payment if hasattr(booking, "payment") else None
+        # GET payment (OneToOne)
+        payment = getattr(booking, "payment", None)
+        logger.error(f"Payment object: {payment}")
 
-        # ---- RAZORPAY REFUND HANDLING ----
-        if payment and payment.payment_method == 'Online':
-            try:
-                # Razorpay refund function
-                payment.refund_payment()
+        # FOR BOTH ONLINE AND CASH — Just cancel the booking
+        booking.status = 'Cancelled'
+        booking.is_confirmed = False
+        booking.save()
 
-                booking.status = 'Cancelled'
-                booking.is_confirmed = False
-                booking.save()
+        logger.error("Booking marked as Cancelled successfully.")
 
-                messages.success(request, "Ticket cancelled and amount refunded successfully.")
-            except Exception as e:
-                messages.error(request, f"Refund failed: {str(e)}")
-
-        else:
-            # CASH / NO PAYMENT
-            booking.status = 'Cancelled'
-            booking.is_confirmed = False
-            booking.save()
-
-            messages.success(request, "Ticket cancelled successfully (Cash payment).")
+        messages.success(request, "Ticket cancelled successfully.")
+        logger.error("---- CANCEL BOOKING END ----")
 
         return redirect('user_dashboard')
 
