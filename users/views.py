@@ -265,35 +265,31 @@ def cancel_booking(request, booking_id):
     try:
         booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
-        # Already cancelled
         if booking.status == 'Cancelled':
             messages.warning(request, "This ticket is already cancelled.")
             return redirect('user_dashboard')
 
-        # Block after departure
         if timezone.now() > booking.schedule.departure_time:
             messages.error(request, "Cannot cancel after departure time.")
             return redirect('user_dashboard')
 
         logger.error("Releasing seats...")
 
-        # --------------------------
-        # RELEASE SEATS
-        # --------------------------
+        # -----------------------
+        # RELEASE SEATS CORRECTLY
+        # -----------------------
         seat_bookings = SeatBooking.objects.filter(booking=booking)
 
         for sb in seat_bookings:
             seat = sb.seat
-            seat.is_booked = False
+            seat.is_booked = False   # release the seat
             seat.save()
             logger.error(f"Released seat {seat.seat_number}")
 
-        # Delete seat-booking mappings
+        # Delete seat-booking rows
         seat_bookings.delete()
 
-        # --------------------------
-        # UPDATE BOOKING
-        # --------------------------
+        # Update booking fields
         booking.status = 'Cancelled'
         booking.is_confirmed = False
         booking.cancelled_at = timezone.now()
@@ -301,7 +297,6 @@ def cancel_booking(request, booking_id):
 
         logger.error("Booking cancelled and seats released.")
         messages.success(request, "Ticket cancelled successfully.")
-
         return redirect('user_dashboard')
 
     except Exception as e:
