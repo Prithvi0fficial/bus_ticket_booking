@@ -233,7 +233,7 @@ from booking.models import Booking  # Your Booking model
 from datetime import datetime
 from .forms import ProfileUpdateForm  # Optional form to update details
 from django.utils import timezone
-from booking.models import Booking, SeatBooking
+from booking.models import Booking, SeatBooking, Seat
 import logging
 logger = logging.getLogger(__name__)
 
@@ -259,38 +259,85 @@ def user_dashboard(request):
 
 @login_required
 def cancel_booking(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    logger.error(f"CANCEL BOOKING VIEW CALLED for booking {booking_id}")
 
-    if booking.status == 'Cancelled':
-        messages.warning(request, "This ticket is already cancelled.")
+    try:
+        booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+        logger.error(f"Loaded booking id={booking.id} status={booking.status} seats_count={booking.seats.count()}")
+
+        if booking.status == 'Cancelled':
+            messages.warning(request, "This ticket is already cancelled.")
+            return redirect('user_dashboard')
+
+        if timezone.now() > booking.schedule.departure_time:
+            messages.error(request, "Cannot cancel after departure time.")
+            return redirect('user_dashboard')
+
+        # Use a transaction to keep DB consistent
+        with transaction.atomic():
+            # 1) Release Seat objects referenced in the Booking M2M (authoritative Seat objects)
+            seat_objs = list(booking.seats.select_for_update().all())
+            logger.error(f"Found {len(seat_objs)} Seat objects from booking.seats to release: {[s.seat_number for s in seat_objs]}")
+
+            for seat in seat_objs:
+                try:
+                    # Use seat.cancel_booking() if available (it resets all flags)
+                    if hasattr(seat, "cancel_booking"):
+                        seat.cancel_booking()
+                    else:
+                        seat.is_booked = False
+                        seat.is_selected = False
+                        seat.selected_by = None
+                        seat.selected_at = None
+                        seat.is_locked = False
+                        seat.locked_at = None
+                        seat.save()
+                    logger.error(f"Released Seat object: {seat.seat_number}")
+                except Exception as ex:
+                    logger.exception(f"Failed to release Seat object {seat.id}: {ex}")
+
+            # 2) Also handle SeatBooking rows that may be the source of truth for UI
+            sb_qs = SeatBooking.objects.select_for_update().filter(booking=booking)
+            sb_count = sb_qs.count()
+            logger.error(f"Found {sb_count} SeatBooking rows for booking.")
+
+            # If SeatBooking stores seat_number (string), update Seat rows matching bus + seat_number defensively
+            seat_numbers_in_sb = list(sb_qs.values_list('seat_number', flat=True))
+            if seat_numbers_in_sb:
+                updated = Seat.objects.filter(bus=booking.bus, seat_number__in=seat_numbers_in_sb).update(
+                    is_booked=False,
+                    is_selected=False,
+                    selected_by=None,
+                    selected_at=None,
+                    is_locked=False,
+                    locked_at=None
+                )
+                logger.error(f"Updated {updated} Seat rows matching SeatBooking seat_numbers {seat_numbers_in_sb}")
+
+            # delete seatbooking rows
+            sb_qs.delete()
+            logger.error("Deleted SeatBooking rows for booking.")
+
+            # 3) Clear M2M relation so booking.seats returns empty
+            booking.seats.clear()
+            logger.error("Cleared booking.seats M2M relationship.")
+
+            # 4) Update booking status fields
+            booking.status = 'Cancelled'
+            booking.is_confirmed = False
+            booking.cancelled_at = timezone.now()
+            booking.save(update_fields=['status', 'is_confirmed', 'cancelled_at'])
+            logger.error("Booking status updated to 'Cancelled'")
+
+        messages.success(request, "Ticket cancelled and seats released successfully.")
+        logger.error("Booking cancelled and seats released.")
         return redirect('user_dashboard')
 
-    if timezone.now() > booking.schedule.departure_time:
-        messages.error(request, "Cannot cancel after departure time.")
-        return redirect('user_dashboard')
+    except Exception as e:
+        logger.exception(f"CANCEL BOOKING ERROR: {e}")
+        messages.error(request, "An error occurred while cancelling the ticket. Check logs.")
+        raise
 
-    # Fetch all seat-booking rows correctly
-    seat_bookings = SeatBooking.objects.filter(
-        booking_id=booking.id,
-        schedule_id=booking.schedule.id
-    )
-
-    # Unlock seats
-    for sb in seat_bookings:
-        sb.seat.is_booked = False
-        sb.seat.save()
-
-    # Remove seat lock rows
-    seat_bookings.delete()
-
-    # Update booking
-    booking.status = 'Cancelled'
-    booking.is_confirmed = False
-    booking.cancelled_at = timezone.now()
-    booking.save()
-
-    messages.success(request, "Ticket cancelled successfully.")
-    return redirect('user_dashboard')
 
 
 @login_required
