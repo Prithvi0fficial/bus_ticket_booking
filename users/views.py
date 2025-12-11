@@ -257,51 +257,40 @@ def user_dashboard(request):
     }
     return render(request, 'users/dashboard.html', context)
 
-
 @login_required
 def cancel_booking(request, booking_id):
-    logger.error(f"CANCEL BOOKING VIEW CALLED for booking {booking_id}")
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
-    try:
-        booking = get_object_or_404(Booking, id=booking_id, user=request.user)
-
-        if booking.status == 'Cancelled':
-            messages.warning(request, "This ticket is already cancelled.")
-            return redirect('user_dashboard')
-
-        if timezone.now() > booking.schedule.departure_time:
-            messages.error(request, "Cannot cancel after departure time.")
-            return redirect('user_dashboard')
-
-        logger.error("Releasing seats...")
-
-        # -----------------------
-        # RELEASE SEATS CORRECTLY
-        # -----------------------
-        seat_bookings = SeatBooking.objects.filter(booking=booking)
-
-        for sb in seat_bookings:
-            seat = sb.seat
-            seat.is_booked = False   # release the seat
-            seat.save()
-            logger.error(f"Released seat {seat.seat_number}")
-
-        # Delete seat-booking rows
-        seat_bookings.delete()
-
-        # Update booking fields
-        booking.status = 'Cancelled'
-        booking.is_confirmed = False
-        booking.cancelled_at = timezone.now()
-        booking.save()
-
-        logger.error("Booking cancelled and seats released.")
-        messages.success(request, "Ticket cancelled successfully.")
+    if booking.status == 'Cancelled':
+        messages.warning(request, "This ticket is already cancelled.")
         return redirect('user_dashboard')
 
-    except Exception as e:
-        logger.error(f"CANCEL BOOKING ERROR: {str(e)}")
-        raise
+    if timezone.now() > booking.schedule.departure_time:
+        messages.error(request, "Cannot cancel after departure time.")
+        return redirect('user_dashboard')
+
+    # Fetch all seat-booking rows correctly
+    seat_bookings = SeatBooking.objects.filter(
+        booking_id=booking.id,
+        schedule_id=booking.schedule.id
+    )
+
+    # Unlock seats
+    for sb in seat_bookings:
+        sb.seat.is_booked = False
+        sb.seat.save()
+
+    # Remove seat lock rows
+    seat_bookings.delete()
+
+    # Update booking
+    booking.status = 'Cancelled'
+    booking.is_confirmed = False
+    booking.cancelled_at = timezone.now()
+    booking.save()
+
+    messages.success(request, "Ticket cancelled successfully.")
+    return redirect('user_dashboard')
 
 
 @login_required
