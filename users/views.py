@@ -273,9 +273,14 @@ def cancel_booking(request, booking_id):
 
     # ---- RELEASE SEATS ----
     seat_bookings = SeatBooking.objects.filter(booking=booking)
+
     for sb in seat_bookings:
-        sb.seat.is_booked = False
-        sb.seat.save()
+        seat = sb.seat
+        seat.cancel_booking()        # clear lock + clear booking
+        sb.is_confirmed = False      # mark record as not confirmed
+        sb.save()
+
+    # delete seat bookings if you don't need history
     seat_bookings.delete()
 
     # ---- UPDATE BOOKING ----
