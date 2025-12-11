@@ -180,10 +180,11 @@ def seat_selection(request, schedule_id):
     # Step 5: Booked + Locked Seats for this schedule
     booked_seats = list(
         Seat.objects.filter(
-            booking_seats__schedule=schedule,
-            booking_seats__is_confirmed=True
+            bus=bus,
+            is_booked=True
         ).values_list("seat_number", flat=True)
     )
+
 
     locked_seats = list(
         Seat.objects.filter(
