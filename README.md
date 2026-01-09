@@ -29,4 +29,8 @@ and route Mangalore To Bangalore ONLY
 https://github.com/Prithvi0fficial/bus_ticket_booking.git
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py runserver
+python manage.py runserver  
+
+
+🛠️ **Technical Challenge: SMTP Blocking & Seat Release Logic**
+The Problem: During deployment on Render, the default SMTP port (587) was restricted, preventing the booking confirmation emails from sending. Because the Seat Release logic was tied to the completion of the email task, any failure in the SMTP handshake caused the seat to remain "Locked" even if the booking was cancelled or failed.
