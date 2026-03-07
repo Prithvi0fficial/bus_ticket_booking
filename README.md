@@ -7,7 +7,7 @@ A web-based bus ticket booking system with dynamic seat selection, Razorpay paym
 
 ⭐IMP:
 
-Please select the date  Feb 28 or Mar 3 
+Please select the date  March 25 or April 3 
 and route Mangalore To Bangalore ONLY
 
 ## Features
