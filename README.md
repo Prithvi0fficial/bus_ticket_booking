@@ -1,38 +1,115 @@
-# Bus Booking System (Django)
+# 🚌 Bus Ticket Booking System (Django)
 
-## Description
-A web-based bus ticket booking system with dynamic seat selection, Razorpay payments, and email ticket confirmation.
+## 📌 Overview
 
-[Click here to view the live demo](https://bus-ticket-booking-pqjs.onrender.com)
+A full-stack web application that allows users to search routes, select seats from a realistic bus layout, and book tickets with secure payment integration. The system supports dynamic pricing, schedule-based booking, and automated ticket generation.
 
-⭐IMP:
+---
 
-Please select the date  April 30 or May 4 
-and route Mangalore To Bangalore ONLY
+## 🚀 Live Demo
 
-## Features
-- Dynamic seat booking with bus layout
-- Cash on delivery & Razorpay payment
-- Email ticket confirmation with PDF
-- User dashboard for booking history and cancellations
-- Admin panel for trip management
-- Discount application
+👉 https://your-live-demo-link.com
 
-## Technologies Used
-- Python (Django)
-- SQLite / MySQL
-- HTML, CSS, JavaScript
+---
 
-## Setup
-1. Clone the repository
+## ⚠️ Important Demo Instructions
+
+To properly test the system:
+
+- 📅 Select Date: **April 30** or **May 4**
+- 🛣️ Route: **Mangalore → Bangalore ONLY**
+
+---
+
+## 🎬 Demo Video
+
+<!-- Option A: Drag and drop your .mp4 file directly into this README on GitHub — it will embed as an inline video player automatically -->
+
+<!-- Option B: YouTube — replace YOUR_VIDEO_ID with your actual video ID -->
+[![Demo Video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+
+---
+
+## 📸 Screenshots
+
+| Search & Routes | Seat Selection |
+|:---:|:---:|
+| ![Search](screenshots/search_bus.png) | ![Seats](screenshots/seat_selection.png) |
+
+| Payment | PDF Ticket |
+|:---:|:---:|
+| ![Payment](screenshots/payment.png) | ![Ticket](screenshots/ticket.png) |
+
+
+
+---
+
+## ✨ Features
+
+### 🎟️ Booking System
+- Dynamic seat selection (49-seat real bus layout)
+- Live seat availability tracking
+- Schedule-based booking system
+
+### 💳 Payments
+- Razorpay integration for online payments
+- Cash on Delivery (COD) option
+
+### 📩 Ticket System
+- Email confirmation after booking
+- PDF ticket generation and download
+
+### 👤 User Dashboard
+- View booking history
+- Cancel tickets
+- Manage user profile
+
+### 🧑‍💼 Admin Panel
+- Manage buses, routes, and schedules
+- Dynamic pricing (AC / Non-AC)
+- Discount management system
+
+---
+
+## 🏗️ Tech Stack
+
+- **Backend:** Python, Django
+- **Frontend:** HTML, CSS, JavaScript
+- **Database:** SQLite 
+- **Payments:** Razorpay
+- **Email:** SMTP / Brevo 
+
+---
+
+## ⚙️ Installation & Setup
+
 ```bash
-https://github.com/Prithvi0fficial/bus_ticket_booking.git
+# Clone the repository
+git clone https://github.com/Prithvi0fficial/bus_ticket_booking.git
+
+# Navigate to project folder
+cd bus_ticket_booking
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Apply migrations
 python manage.py migrate
-python manage.py runserver  
 
+# Run development server
+python manage.py runserver
+```
 
+Open your browser at **http://127.0.0.1:8000**
 
-### 🛠️ Technical Challenge: SMTP Blocking & Seat Release Logic
+---
 
-The Problem: During deployment on Render, the default SMTP port (587) was restricted, preventing the booking confirmation emails from sending. Because the Seat Release logic was tied to the completion of the email task, any failure in the SMTP handshake caused the seat to remain "Locked" even if the booking was cancelled or failed.
+## 🤝 Contributing
+
+Pull requests are welcome. For major changes, please open an issue first.
+
+---
+
+## 📄 License
+
+[MIT](LICENSE)
