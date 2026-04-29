@@ -38,7 +38,7 @@ To properly test the system:
 
 | Payment | PDF Ticket |
 |:---:|:---:|
-| ![Payment](screenshots/payment.png) | ![Ticket](screenshots/ticket.png) |
+| ![Payment](screenshots/payment.png) | ![Ticket](screenshots/Ticket.png) |
 
 
 
