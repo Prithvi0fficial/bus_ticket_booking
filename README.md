@@ -21,14 +21,14 @@ To properly test the system:
 
 ---
 
-## 🎬 Demo Video
+<!-- ## 🎬 Demo Video
 
 <!-- Option A: Drag and drop your .mp4 file directly into this README on GitHub — it will embed as an inline video player automatically -->
 
 <!-- Option B: YouTube — replace YOUR_VIDEO_ID with your actual video ID -->
-[![Demo Video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+<!-- [![Demo Video](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
 
----
+-->
 
 ## 📸 Screenshots
 
@@ -110,6 +110,3 @@ Pull requests are welcome. For major changes, please open an issue first.
 
 ---
 
-## 📄 License
-
-[MIT](LICENSE)
