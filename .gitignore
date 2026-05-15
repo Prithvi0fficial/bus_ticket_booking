@@ -1,15 +1,27 @@
-# Virtual environment
-.venv/
+# Virtual Environment
+venv/
+env/
+ENV/
 
-# Environment variables
-.env
+# Python cache
+__pycache__/
+*.pyc
 
 # SQLite database
 db.sqlite3
 
-# Media files (optional if large)
+# Environment variables
+.env
+
+# Static files collected
+staticfiles/
+
+# Media uploads
 media/
 
-# Byte-compiled / cache
-__pycache__/
-*.pyc
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

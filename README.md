@@ -8,7 +8,7 @@ A full-stack web application that allows users to search routes, select seats fr
 
 ## 🚀 Live Demo
 
-👉 https://your-live-demo-link.com
+👉 [live-demo-link](https://bus-ticket-booking-pqjs.onrender.com/)
 
 ---
 
@@ -89,6 +89,12 @@ git clone https://github.com/Prithvi0fficial/bus_ticket_booking.git
 
 # Navigate to project folder
 cd bus_ticket_booking
+
+# Create virtual environment
+python -m venv/venv
+
+# Activate virtual environment
+.\venv\Scripts\Activate # in Windows
 
 # Install dependencies
 pip install -r requirements.txt

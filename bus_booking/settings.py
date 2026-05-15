@@ -41,10 +41,14 @@ MEDIA_ROOT = BASE_DIR / "media"
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "bus-ticket-booking-pqjs.onrender.com").split(",")
-
+# ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "bus-ticket-booking-pqjs.onrender.com").split(",")
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "bus-ticket-booking-pqjs.onrender.com",
+]
 
 # Application definition
 
@@ -148,7 +152,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000']  # Add your domain/IP here
+# CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000']  # Add your domain/IP here
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "https://bus-ticket-booking-pqjs.onrender.com",
+]
+
 
 ANYMAIL = {
     "BREVO_API_KEY": os.environ.get("BREVO_API_KEY"),
@@ -196,7 +205,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 AUTHENTICATION_BACKENDS = [
-    'users.auth_backend.EmailOrUsernameAuthBackend'  # Custom email authentication
+    'users.auth_backend.EmailOrUsernameAuthBackend',  # Custom email authentication
+    'django.contrib.auth.backends.ModelBackend',
     
 ]
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
