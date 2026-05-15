@@ -16,7 +16,7 @@ A full-stack web application that allows users to search routes, select seats fr
 
 To properly test the system:
 
-- 📅 Select Date: **April 30** or **May 4**
+- 📅 Select Date: **May 30** or **June 4**
 - 🛣️ Route: **Mangalore → Bangalore ONLY**
 
 ---
