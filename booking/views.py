@@ -1,132 +1,47 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
+from decimal import Decimal
+from datetime import datetime, timedelta
+from io import BytesIO
+import json
+import os
+
+import razorpay
+
+from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMessage
 from django.db.models import Count, Q, F
-from django.http import HttpResponse
-from django.conf import settings
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
+from django.utils.dateparse import parse_date
+from django.utils.timezone import now
+from django.views.decorators.csrf import csrf_exempt
 
-from io import BytesIO
-import os
-from .models import Bus, Route, Booking, Ticket
+from .forms import FeedbackForm
+from .models import (
+    Booking,
+    Bus,
+    BusRoute,
+    BusSchedule,
+    Discount,
+    Payment,
+    Route,
+    RoutePrice,
+    RouteStop,
+    Seat,
+    Ticket,
+)
 
-from django.http import JsonResponse
-from booking.models import User
+from .utils import send_booking_email
 
-from .models import RoutePrice
+from users.models import Profile
 
-
-from django.contrib.auth import get_user_model
-User = get_user_model()  
-
-
-from .models import Bus, BusRoute, RouteStop, RoutePrice, Seat, Booking, Ticket, Discount
-# Home Page
-def home(request):
-    buses = Bus.objects.all()
-    routes = Route.objects.all()
-    return render(request, 'booking/home.html', {'buses': buses, 'routes': routes})
+User = get_user_model()
 
 # Seat Selection  --- -- - --------------------------------------------------
-import json
-from django.shortcuts import render, get_object_or_404
-from .models import Bus, RoutePrice, Seat
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.utils import timezone
-from .models import Seat, Bus, RoutePrice
 
-from django.shortcuts import render, get_object_or_404, redirect
-
-from .models import Bus, Seat, RoutePrice
-from django.shortcuts import render, get_object_or_404, redirect
-
-from .models import Bus, Seat, RoutePrice
-
-from django.shortcuts import get_object_or_404, render, redirect
-from .models import Bus, Seat, RoutePrice, Discount, BusSchedule
-
-from booking.models import BusSchedule
-
-from datetime import datetime
-from django.http import HttpResponse
-
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.dateparse import parse_date
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from django.utils.dateparse import parse_date
-from datetime import datetime
-from .models import BusSchedule, Seat, RoutePrice, Discount
-
-from decimal import Decimal
-from django.utils.dateparse import parse_date
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-from .models import BusSchedule, Seat, RoutePrice, Discount
-
-from decimal import Decimal
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from django.utils.dateparse import parse_date
-from .models import BusSchedule, Seat, RoutePrice, Discount
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from django.utils.dateparse import parse_date
-from decimal import Decimal
-from .models import BusSchedule, Seat, RoutePrice, Discount  # adjust your imports if needed
-
-from decimal import Decimal
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from django.utils.dateparse import parse_date
-from .models import BusSchedule, Seat, RoutePrice, Discount
-from decimal import Decimal
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-from django.utils.dateparse import parse_date
-
-from .models import (
-    BusSchedule,
-    Seat,
-    Discount,
-    RoutePrice
-)
-from django.utils.timezone import now  # Make sure this is imported
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from django.utils.dateparse import parse_date
-from decimal import Decimal
-from .models import BusSchedule, Seat, RoutePrice, Discount
-
-from decimal import Decimal
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-from django.utils.dateparse import parse_date
-from django.utils.timezone import now
-from django.contrib import messages
-from django.utils import timezone
-from datetime import timedelta
-
-
-
-from .models import BusSchedule, Seat, RoutePrice, Discount
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.http import HttpResponse
-from django.utils.timezone import now
-from datetime import timedelta
-from decimal import Decimal
-from .models import BusSchedule, Seat, RoutePrice, Discount
-from django.utils.dateparse import parse_date
-
-
-from django.contrib.auth.decorators import login_required
 
 # @login_required(login_url='/users/auth/') 
 def home(request):
@@ -208,7 +123,7 @@ def seat_selection(request, schedule_id):
 
         seat_count = len(selected_seats)
 
-        # ✅ Lock selected seats if available
+        #  Lock selected seats if available
         seat_objects = Seat.objects.filter(
             bus=bus,
             seat_number__in=selected_seats,
@@ -382,11 +297,26 @@ def search_buses(request):
                 date=travel_date
             ).select_related("bus", "route")
 
+    # Get all available routes with dates
+    available_routes = {}
+
+    all_schedules = BusSchedule.objects.select_related("route").order_by("date")
+
+    for schedule in all_schedules:
+        route_name = f"{schedule.route.source} → {schedule.route.destination}"
+
+        if route_name not in available_routes:
+            available_routes[route_name] = []
+
+        if schedule.date not in available_routes[route_name]:
+            available_routes[route_name].append(schedule.date)
+
     return render(request, "booking/search_buses.html", {
         "schedules": schedules,
         "source": source,
         "destination": destination,
-        "travel_date": travel_date
+        "travel_date": travel_date,
+        "available_routes": available_routes,
     })
 
 #--------------------------------------------------------------------------------------------------------------------
