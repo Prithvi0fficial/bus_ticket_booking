@@ -130,6 +130,7 @@ DATABASES = {
         default=config("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
     )
 }
+CONN_MAX_AGE = 60
 
 GRAPHVIZ_DOT = r'M:\graph\Graphviz\bin\dot.exe'
 
