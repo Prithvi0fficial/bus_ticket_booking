@@ -10,14 +10,6 @@ A full-stack web application that allows users to search routes, select seats fr
 
 👉 [live-demo-link](https://bus-ticket-booking-pqjs.onrender.com/)
 
----
-
-## ⚠️ Important Demo Instructions
-
-To properly test the system:
-
-- 📅 Select Date: **April 30** or **May 4**
-- 🛣️ Route: **Mangalore → Bangalore ONLY**
 
 ---
 
